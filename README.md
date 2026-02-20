@@ -15,9 +15,24 @@
 
 ## What This Is
 
-A fully self-hosted, autonomous AI infrastructure running 24/7 across 5 machines with zero cloud dependency for compute. Every service is containerized, every LLM call goes to local hardware, and the whole platform manages itself.
+WolfeUp Platform is a self-healing, always-on infrastructure currently running 9+ games and browser-based tasks 24/7 across 3 of 5 dedicated servers. Despite being in early stages, the system autonomously manages resource allocation for a single, demanding AI model consuming 22.2GB of VRAM, demonstrating its potential for scaling complex AI workloads without human intervention—currently, reply bot job completion is paused for core stability testing. This project aims to push the boundaries of automated server management and persistent AI operation, offering a glimpse into a future where infrastructure adapts and optimizes itself in real-time.
 
-**The short version:** an RTX 4090 runs 6 open-source models. A Mac mini controls a Chrome browser via remote debugging. An AI agent browses X (Twitter), scores tweets, writes replies, and posts them — all without a human in the loop. A Mission Control dashboard shows everything happening in real time. 75+ HTML5 games run as Docker containers behind nginx. And this README rewrites itself every few hours.
+## What's Happening Now
+
+Right now, the platform is actively running the Gemma 3 27B model in VRAM, currently utilizing 22.2GB out of 24GB of GPU memory. However, no reply bot jobs have finished recently, and the status of the last job attempted is currently unknown.
+
+
+## Platform Status
+
+| Metric | Value |
+|--------|-------|
+| Servers Online | 3/5 |
+| Games Running | 9+ |
+| Models Available | 10 |
+| Models Loaded | 1 (22.2GB / 24GB VRAM) |
+| Reply Jobs (recent) | 0 completed |
+| GitHub Stars | 0 |
+| Last Updated | 2026-02-20 06:32:54 UTC |
 
 ---
 
@@ -44,15 +59,6 @@ A fully self-hosted, autonomous AI infrastructure running 24/7 across 5 machines
 
 The nerve center of the entire platform. A dark-themed dashboard that surfaces everything happening across all servers in real time.
 
-**Pages:**
-- **Home** — Live system health, GPU VRAM usage, loaded models, orchestrator status
-- **Social** — Tweet composer with 6 AI models and 6 tone presets; reply pipeline control
-- **Games** — Arcade stats, container health, player counts
-- **MCP** — Status of all 15 Model Context Protocol servers
-- **Pipeline** — Reply orchestrator job history with full stage-by-stage logs
-- **Agents** — OpenClaw agent activity feed
-- **Trends** — Trending topics collector dashboard
-
 **Source:** [`services/mission-control/`](services/mission-control/)
 
 </details>
@@ -62,21 +68,7 @@ The nerve center of the entire platform. A dark-themed dashboard that surfaces e
 
 **Stack:** Node.js · Express · Playwright · Ollama
 
-A 9-stage pipeline that runs autonomously on the gateway server:
-
-```
-INIT → SEARCH → FILTER → SCORE → SELECT → GENERATE → REFINE → REVIEW → POST
-```
-
-1. **SEARCH** — Playwright browses X via Chrome CDP, collects 50–200 candidate tweets
-2. **FILTER** — Removes spam, ads, bots, non-English content
-3. **SCORE** — `qwen3:30b-a3b` scores each tweet 0–100 for reply potential (MoE, 3B active params = fast)
-4. **SELECT** — Picks the highest-scoring tweet
-5. **GENERATE** — `qwen3:32b` writes the reply
-6. **REFINE** — `gemma3:27b` polishes it (different model family = different voice)
-7. **REVIEW** — Safety check, length validation
-8. **POST** — Playwright types and submits the reply
-9. **VERIFY** — Confirms the post appeared in the article count
+9-stage autonomous pipeline: `INIT → SEARCH → FILTER → SCORE → SELECT → GENERATE → REFINE → REVIEW → POST`
 
 **Source:** [`services/reply-orchestrator/`](services/reply-orchestrator/)
 
@@ -87,12 +79,6 @@ INIT → SEARCH → FILTER → SCORE → SELECT → GENERATE → REFINE → REVI
 
 **Stack:** Node.js · Express · JWT · Passkey (WebAuthn) · Google OAuth · Apple Sign In
 
-Single auth service protecting all `.wolfeup.com` subdomains via a shared JWT cookie. Supports:
-- **Passkey** (WebAuthn, biometric — primary method)
-- **Google OAuth**
-- **Apple Sign In**
-- **Admin panel** with IP-locked access
-
 **Source:** [`services/auth-service/`](services/auth-service/)
 
 </details>
@@ -100,72 +86,25 @@ Single auth service protecting all `.wolfeup.com` subdomains via a shared JWT co
 <details>
 <summary><strong>MCP Servers</strong> — 15 Model Context Protocol endpoints</summary>
 
-**Stack:** Node.js · mcp-proxy · Playwright · Puppeteer
-
-15 MCP servers running on the Mac Node, each on its own SSE endpoint (ports 9001–9015):
-
-| Port | Server | Purpose |
-|------|--------|---------|
-| 9001 | Filesystem | Read/write Mac filesystem |
-| 9002 | Memory | Persistent key-value store |
-| 9003 | Sequential Thinking | Step-by-step reasoning |
-| 9004 | Brave Search | Web search |
-| 9005 | GitHub | Repos, issues, PRs |
-| 9006 | Playwright | Browser automation via Chrome CDP |
-| 9007 | Puppeteer | Headless browser |
-| 9008 | Desktop Commander | Terminal + file ops |
-| 9009 | Xcode Build | iOS/macOS builds |
-| 9010 | iOS Simulator | UI control, screenshots |
-| 9011 | Shell Commands | Run arbitrary shell commands |
-| 9012 | Obsidian | Vault notes |
-| 9013 | Context7 | Library docs |
-| 9014 | Google Drive | File access |
-| 9015 | Everything | Protocol test server |
+15 MCP servers on ports 9001–9015: Filesystem, Memory, Brave Search, GitHub, Playwright, Puppeteer, Desktop Commander, Xcode Build, iOS Simulator, Shell Commands, Obsidian, Context7, Google Drive, Sequential Thinking, Everything.
 
 **Source:** [`automation/mcp-servers/`](automation/mcp-servers/)
 
 </details>
 
 <details>
-<summary><strong>Ping Platform</strong> — DNS latency monitoring</summary>
+<summary><strong>Trading Bots</strong> — Polymarket + BTC prediction</summary>
 
-**Stack:** Node.js · Express · WebSocket
+Autonomous prediction market trading using multi-model LLM sentiment analysis.
 
-Real-time DNS resolution latency tracking across multiple nameservers. Displays geographic latency heatmaps and historical trends.
-
-**Source:** [`services/ping-platform/`](services/ping-platform/)
-
-</details>
-
-<details>
-<summary><strong>Polymarket Bot</strong> — Prediction market trading</summary>
-
-**Stack:** Node.js · LLM ensemble · SQLite
-
-Autonomous prediction market trading system using multi-model sentiment analysis:
-- **Collectors** — Fear/Greed index, price feeds, news scraping, odds collection
-- **Engine** — LLM-based market analysis, bet sizing, self-improvement loop
-- **Dashboard** — Real-time P&L, open positions, model confidence scores
-
-**Source:** [`trading/polymarket/`](trading/polymarket/)
-
-</details>
-
-<details>
-<summary><strong>BTC Prediction Market</strong> — Bitcoin-specific forecasting</summary>
-
-Real-time Bitcoin price prediction dashboard with multi-timeframe analysis and LLM-generated market commentary.
-
-**Source:** [`trading/btc-prediction-market/`](trading/btc-prediction-market/)
+**Source:** [`trading/`](trading/)
 
 </details>
 
 <details>
 <summary><strong>Games Arcade</strong> — 75+ browser games</summary>
 
-75+ HTML5 games running as individual Docker containers. Arcade classics, neon-series originals, card games, puzzle games — each a self-contained static app served through nginx.
-
-**See:** [`games/README.md`](games/README.md)
+HTML5 games as individual Docker containers. See [`games/README.md`](games/README.md).
 
 </details>
 
@@ -178,67 +117,39 @@ Real-time Bitcoin price prediction dashboard with multi-timeframe analysis and L
 ![Node.js](https://img.shields.io/badge/Node.js-22-339933?style=flat-square&logo=node.js&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind-v4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-75%2B%20containers-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![Ollama](https://img.shields.io/badge/Ollama-6%20models-black?style=flat-square)
 ![Playwright](https://img.shields.io/badge/Playwright-browser%20automation-45ba4b?style=flat-square&logo=playwright&logoColor=white)
-![Convex](https://img.shields.io/badge/Convex-realtime%20db-EE342F?style=flat-square)
 
 </div>
-
-**LLM Models (RTX 4090, local):**
-- `qwen3:32b` — Primary generation (20.2GB, best benchmarks)
-- `qwen3:30b-a3b` — Fast scoring via MoE (18.6GB, only 3B params active)
-- `gemma3:27b` — Editorial refinement (17.4GB, Google model family)
-- `qwen2.5:32b` — Fallback generation (19.9GB)
-- `glm-4.7-flash` — Alternative (19.0GB)
-- `nemotron-3-nano` — Alternative (24.3GB)
 
 ---
 
 ## Getting Started
 
-Each service has its own `Dockerfile` and can be run independently. Copy `.env.example` to `.env` and fill in your values.
-
 ```bash
-# Clone
 git clone https://github.com/twolfekc/wolfeup-platform.git
 cd wolfeup-platform
-
-# Configure
 cp .env.example .env
+# Edit .env with your values
 
-# Run a specific service
+# Run Mission Control
 cd services/mission-control
 docker build -t mission-control .
 docker run -p 5070:5070 --env-file ../../.env mission-control
 
-# Run reply orchestrator
+# Run Reply Orchestrator
 cd services/reply-orchestrator
 npm install
-CDP_URL=http://localhost:9222 OLLAMA_RTX4090=http://localhost:11434 node server.js
-
-# Start all 15 MCP servers (Mac only, adjust paths)
-cd automation/mcp-servers
-BRAVE_API_KEY=... GITHUB_TOKEN=... ./start-all.sh
+node server.js
 ```
-
-**Requirements:**
-- Ollama running with at least one model loaded
-- Chrome/Chromium with `--remote-debugging-port` for browser automation
-- Docker for containerized services
-
----
-
-## Living README
-
-> This README is a living document. The `What This Is` section and service descriptions are regenerated every 2–3 hours by `gemma3:27b` running on the RTX 4090, pulling live stats from across the platform before rewriting.
->
-> The generator lives in [`automation/readme-generator/`](automation/readme-generator/).
 
 ---
 
 <div align="center">
+
+> *This README is a living document — regenerated every 2–3 hours by `gemma3:27b` on the RTX 4090.*
+> *Generator: [`automation/readme-generator/`](automation/readme-generator/)*
 
 Made in Kansas City · Built on local hardware · Zero cloud compute
 
