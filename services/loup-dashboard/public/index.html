@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loup Agent Dashboard</title>
+<style>
+:root{--bg:#0d1117;--sf:#161b22;--sf2:#1c2128;--bd:#30363d;--tx:#e6edf3;--mu:#7d8590;--or:#f97316;--or2:rgba(249,115,22,0.12);--gn:#3fb950;--gn2:rgba(63,185,80,0.12);--rd:#f85149;--rd2:rgba(248,81,73,0.12);--ye:#d29922;--bl:#58a6ff;--fn:'JetBrains Mono','Fira Code','SF Mono',monospace;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--tx);font-family:var(--fn);font-size:13px;min-height:100vh;}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--bd);background:var(--sf);position:sticky;top:0;z-index:100;}
+.logo{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;}
+.la{color:var(--or);}
+.ls{color:var(--mu);font-size:12px;font-weight:400;}
+.hr{display:flex;gap:20px;align-items:center;}
+.clk{color:var(--mu);font-size:12px;}
+.wsd{width:7px;height:7px;border-radius:50%;background:var(--rd);transition:all .3s;}
+.wsd.on{background:var(--gn);box-shadow:0 0 6px var(--gn);}
+.wsi{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mu);}
+.tabs{display:flex;gap:2px;padding:0 24px;background:var(--sf);border-bottom:1px solid var(--bd);}
+.tab{padding:10px 16px;font-size:12px;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--fn);}
+.tab:hover{color:var(--tx);}
+.tab.act{color:var(--or);border-bottom-color:var(--or);}
+.tbg{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:1px 6px;font-size:10px;margin-left:5px;}
+.tab.act .tbg{background:var(--or2);border-color:var(--or);color:var(--or);}
+main{padding:20px 24px;max-width:1400px;margin:0 auto;}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.sc{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:16px 20px;}
+.sl{color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.sv{font-size:26px;font-weight:700;}
+.sv.or{color:var(--or);}
+.sv.gn{color:var(--gn);}
+.ss{color:var(--mu);font-size:11px;margin-top:4px;}
+.pane{display:none;}
+.pane.act{display:block;}
+.panel{background:var(--sf);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--sf2);}
+.pt{font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;}
+.cb{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:2px 8px;font-size:11px;color:var(--mu);}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:8px 16px;font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bd);background:var(--sf2);}
+td{padding:10px 16px;border-bottom:1px solid var(--bd);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:rgba(255,255,255,.02);}
+.pill{display:inline-block;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:500;white-space:nowrap;}
+.pg{background:var(--gn2);color:var(--gn);}
+.po{background:var(--or2);color:var(--or);}
+.pr{background:var(--rd2);color:var(--rd);}
+.pmu{background:rgba(125,133,144,.12);color:var(--mu);}
+.pb{background:rgba(88,166,255,.1);color:var(--bl);}
+.mt{font-size:12px;}
+.mop{color:#c084fc;}
+.msn{color:var(--bl);}
+.mcx{color:var(--gn);}
+.mmx{color:var(--ye);}
+.mxx{color:var(--mu);}
+.se{color:var(--bl);font-size:12px;}
+.cap{display:inline-block;background:rgba(88,166,255,.08);color:var(--bl);border:1px solid rgba(88,166,255,.2);border-radius:4px;padding:1px 5px;font-size:10px;margin:1px;}
+.nr{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-bottom:1px solid var(--bd);}
+.nr:last-child{border-bottom:none;}
+.ni{font-size:20px;line-height:1.3;min-width:24px;text-align:center;}
+.nl{font-weight:600;font-size:13px;margin-bottom:3px;}
+.nd{color:var(--mu);font-size:11px;line-height:1.5;}
+.empty{padding:36px 16px;text-align:center;color:var(--mu);font-size:12px;}
+.ei{font-size:28px;margin-bottom:8px;opacity:.3;}
+.feed{max-height:400px;overflow-y:auto;}
+.feed::-webkit-scrollbar{width:4px;}
+.feed::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px;}
+.fi{display:flex;gap:12px;padding:8px 16px;border-bottom:1px solid var(--bd);font-size:12px;animation:fi .2s ease;}
+.fi:last-child{border-bottom:none;}
+.fts{color:var(--mu);min-width:70px;flex-shrink:0;}
+.fty{min-width:70px;flex-shrink:0;}
+.fm{color:var(--tx);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ctask{font-size:11px;color:var(--mu);margin-top:3px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+@keyframes fi{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){.sg{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🐺 <span class="la">Loup</span><span class="ls">/ agent dashboard</span></div>
+  <div class="hr">
+    <div class="clk" id="clk">--:--:-- UTC</div>
+    <div class="wsi"><div class="wsd" id="wsd"></div><span id="wss">connecting</span></div>
+  </div>
+</header>
+<div class="tabs">
+  <button class="tab act" onclick="st('ov')" id="tab-ov">Overview</button>
+  <button class="tab" onclick="st('se')" id="tab-se">Sessions <span class="tbg" id="tb-se">0</span></button>
+  <button class="tab" onclick="st('no')" id="tab-no">Nodes <span class="tbg" id="tb-no">0</span></button>
+  <button class="tab" onclick="st('cr')" id="tab-cr">Cron Jobs <span class="tbg" id="tb-cr">0</span></button>
+  <button class="tab" onclick="st('fe')" id="tab-fe">Activity</button>
+</div>
+<main>
+
+<div class="pane act" id="pane-ov">
+  <div class="sg">
+    <div class="sc"><div class="sl">Sessions</div><div class="sv or" id="sv-se">—</div><div class="ss" id="ss-se">loading...</div></div>
+    <div class="sc"><div class="sl">Cron Jobs</div><div class="sv" id="sv-cr">—</div><div class="ss" id="ss-cr">loading...</div></div>
+    <div class="sc"><div class="sl">Nodes Online</div><div class="sv gn" id="sv-no">—</div><div class="ss" id="ss-no">loading...</div></div>
+    <div class="sc"><div class="sl">Dashboard Up</div><div class="sv" id="sv-up">—</div><div class="ss">server uptime</div></div>
+  </div>
+  <div class="panel">
+    <div class="ph"><div class="pt">⚡ What's happening right now</div><span style="font-size:11px;color:var(--mu)" id="lu">—</span></div>
+    <div id="now"><div class="empty"><div class="ei">⚡</div>Loading...</div></div>
+  </div>
+  <div class="panel">
+    <div class="ph"><div class="pt">💬 Recent Sessions</div><button class="tab" onclick="st('se')" style="border:none;padding:4px 10px;font-size:11px">see all →</button></div>
+    <table><thead><tr><th>Session</th><th>Kind</th><th>Model</th><th>Tokens</th><th>Last Active</th></tr></thead>
+    <tbody id="ov-se"><tr><td colspan="5"><div class="empty"><div class="ei">💬</div>Loading...</div></td></tr></tbody></table>
+  </div>
+</div>
+
+<div class="pane" id="pane-se">
+  <div class="panel">
+    <div class="ph"><div class="pt">💬 All Sessions <span class="cb" id="cnt-se">0</span></div></div>
+    <table><thead><tr><th>Session Key</th><th>Kind</th><th>Model</th><th>Tokens</th><th>Last Active</th></tr></thead>
+    <tbody id="tb-se-body"><tr><td colspan="5"><div class="empty">Loading...</div></td></tr></tbody></table>
+  </div>
+</div>
+
+<div class="pane" id="pane-no">
+  <div class="panel">
+    <div class="ph"><div class="pt">🖥 Paired Nodes <span class="cb" id="cnt-no">0</span></div></div>
+    <table><thead><tr><th>Name</th><th>Platform</th><th>Device ID</th><th>Status</th><th>Capabilities</th></tr></thead>
+    <tbody id="tb-no-body"><tr><td colspan="5"><div class="empty">Loading...</div></td></tr></tbody></table>
+  </div>
+</div>
+
+<div class="pane" id="pane-cr">
+  <div class="panel">
+    <div class="ph"><div class="pt">⏰ Cron Jobs <span class="cb" id="cnt-cr">0</span></div></div>
+    <table><thead><tr><th>Name &amp; Task</th><th>Schedule</th><th>Model</th><th>Next Run</th><th>Last Run</th><th>Duration</th><th>Status</th></tr></thead>
+    <tbody id="tb-cr-body"><tr><td colspan="7"><div class="empty">Loading...</div></td></tr></tbody></table>
+  </div>
+</div>
+
+<div class="pane" id="pane-fe">
+  <div class="panel">
+    <div class="ph"><div class="pt">⚡ Activity Feed</div><button onclick="clf()" style="background:none;border:1px solid var(--bd);color:var(--mu);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-family:var(--fn)">Clear</button></div>
+    <div class="feed" id="feed"><div class="fi"><span class="fts">--:--:--</span><span class="fty" style="color:var(--mu)">system</span><span class="fm">Connecting...</span></div></div>
+  </div>
+</div>
+
+</main>
+<script>
+var ws,rt,sst=null;
+function st(n){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('act');});document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('act');});document.getElementById('tab-'+n).classList.add('act');document.getElementById('pane-'+n).classList.add('act');}
+setInterval(function(){document.getElementById('clk').textContent=new Date().toUTCString().slice(17,25)+' UTC';},1000);
+function esc(s){if(!s)return'—';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fu(ms){var s=Math.floor(ms/1e3),m=Math.floor(s/60),h=Math.floor(m/60),d=Math.floor(h/24);if(d>0)return d+'d '+h%24+'h';if(h>0)return h+'h '+m%60+'m';if(m>0)return m+'m '+s%60+'s';return s+'s';}
+function fr(ts){if(!ts)return'—';var d=Date.now()-ts;if(d<5e3)return'just now';if(d<6e4)return Math.floor(d/1e3)+'s ago';if(d<36e5)return Math.floor(d/6e4)+'m ago';if(d<864e5)return Math.floor(d/36e5)+'h ago';return new Date(ts).toLocaleDateString();}
+function ft(n){if(!n)return'—';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'k';return''+n;}
+function fd(ms){if(!ms)return'—';if(ms<1e3)return ms+'ms';if(ms<6e4)return(ms/1e3).toFixed(1)+'s';return Math.floor(ms/6e4)+'m '+Math.floor((ms%6e4)/1e3)+'s';}
+function mc(m){if(!m)return'mxx';if(m.indexOf('spark')>-1)return'msn';if(m.indexOf('codex')>-1||m.indexOf('gpt')>-1)return'mcx';return'mxx';}
+function sm(m){if(!m)return'—';return m.replace('openai-codex/','').replace('openai/','');}
+function sk(k){if(!k)return'—';return k.replace('agent:main:','');}
+function skind(s){var key=s.key||'';if(key.indexOf(':subagent:')>-1)return'sub-agent';if(key.indexOf(':main')>-1&&(s.kind||'')==='direct')return'main';if((s.kind||'')==='group')return'group';return s.kind||'—';}
+function fnext(j){var ms=j.state&&j.state.nextRunAtMs;if(!ms)return'—';var d=ms-Date.now();if(d<0)return'<span style="color:var(--rd)">overdue</span>';if(d<3e5)return'<span style="color:var(--ye)">'+Math.floor(d/6e4)+'m</span>';if(d<36e5)return Math.floor(d/6e4)+'m';if(d<864e5)return Math.floor(d/36e5)+'h '+Math.floor((d%36e5)/6e4)+'m';return new Date(ms).toLocaleDateString();}
+function fsc(sc){if(!sc)return'—';if(sc.kind==='cron')return'<span class="se">'+esc(sc.expr)+'</span><br><span style="color:var(--mu);font-size:10px">'+esc(sc.tz||'UTC')+'</span>';if(sc.kind==='every'){var m=Math.floor((sc.everyMs||0)/6e4),h=Math.floor(m/60);return'<span class="se">every '+(h>0?h+'h':m+'m')+'</span>';}return esc(sc.kind);}
+function ts(pl){if(!pl||!pl.message)return'—';var lines=pl.message.split('\n').map(function(l){return l.trim();}).filter(function(l){return l&&l[0]!=='#'&&!/^\d+\./.test(l)&&l.slice(0,2)!=='**';});var f=(lines[0]||pl.message.split('\n')[0]||'').replace(/\*\*/g,'').replace(/^\d+\.\s*/,'');return f.length>80?f.slice(0,80)+'…':f||'—';}
+function af(type,msg,color){var f=document.getElementById('feed');var i=document.createElement('div');i.className='fi';i.innerHTML='<span class="fts">'+new Date().toLocaleTimeString()+'</span><span class="fty" style="color:'+(color||'var(--mu)')+'">'+esc(type)+'</span><span class="fm">'+esc(msg)+'</span>';f.insertBefore(i,f.firstChild);while(f.children.length>150)f.removeChild(f.lastChild);}
+function clf(){document.getElementById('feed').innerHTML='';}
+
+function renderNow(ss,ns,cs){
+  var it=[];
+  var main=ss.find(function(s){return(s.key||'').indexOf(':main')>-1&&(s.key||'').indexOf('subagent')<0;});
+  if(main)it.push({i:'🤖',l:'Main brain active',d:sm(main.model)+' — '+ft(main.totalTokens)+' tokens in context',c:'var(--or)'});
+  var subs=ss.filter(function(s){return(s.key||'').indexOf('subagent')>-1;});
+  if(subs.length)it.push({i:'⚙️',l:subs.length+' sub-agent'+(subs.length>1?'s':'')+' running',d:subs.slice(0,3).map(function(s){return sm(s.model);}).join(', '),c:'var(--gn)'});
+  var on=ns.filter(function(n){return n.connected;});
+  if(on.length)it.push({i:'🖥',l:on.length+' node'+(on.length>1?'s':'')+' connected',d:on.map(function(n){return n.displayName||'unknown';}).join(', '),c:'var(--bl)'});
+  var off=ns.filter(function(n){return!n.connected;});
+  if(off.length)it.push({i:'💤',l:off.length+' node'+(off.length>1?'s':'')+' offline',d:off.map(function(n){return n.displayName||'unknown';}).join(', '),c:'var(--mu)'});
+  var nc=cs.filter(function(c){return c.enabled!==false&&c.state&&c.state.nextRunAtMs;}).sort(function(a,b){return a.state.nextRunAtMs-b.state.nextRunAtMs;});
+  if(nc.length){var nx=nc[0],df=nx.state.nextRunAtMs-Date.now(),tx=df<6e4?'in '+Math.floor(df/1e3)+'s':df<36e5?'in '+Math.floor(df/6e4)+'m':'in '+Math.floor(df/36e5)+'h';it.push({i:'⏰',l:'Next: '+nx.name,d:tx+' — '+ts(nx.payload),c:'var(--ye)'});}
+  var lc=cs.filter(function(c){return c.state&&c.state.lastRunAtMs;}).sort(function(a,b){return b.state.lastRunAtMs-a.state.lastRunAtMs;});
+  if(lc.length){var la=lc[0],ok=la.state.lastStatus==='ok';it.push({i:ok?'✅':'❌',l:'Last ran: '+la.name,d:fr(la.state.lastRunAtMs)+' — '+(ok?'OK in '+fd(la.state.lastDurationMs):'error'),c:ok?'var(--gn)':'var(--rd)'});}
+  if(!it.length){document.getElementById('now').innerHTML='<div class="empty"><div class="ei">💤</div>Nothing active</div>';return;}
+  document.getElementById('now').innerHTML=it.map(function(x,i){return'<div class="nr"'+(i===it.length-1?' style="border-bottom:none"':'')+'>'+
+    '<div class="ni">'+x.i+'</div><div><div class="nl" style="color:'+x.c+'">'+esc(x.l)+'</div><div class="nd">'+esc(x.d)+'</div></div></div>';}).join('');
+}
+
+function renderSessions(ss){
+  var t=ss.length;
+  document.getElementById('cnt-se').textContent=t;
+  document.getElementById('tb-se').textContent=t;
+  document.getElementById('sv-se').textContent=t;
+  var k={};ss.forEach(function(s){var x=skind(s);k[x]=(k[x]||0)+1;});
+  document.getElementById('ss-se').textContent=Object.keys(k).map(function(x){return k[x]+' '+x;}).join(', ')||'—';
+  var mp={main:'po','sub-agent':'pg',group:'pb'};
+  var rows=ss.slice(0,60).map(function(s){var kd=skind(s),kp=mp[kd]||'pmu';
+    return'<tr><td style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mu)">'+esc(sk(s.key))+'</td>'+
+    '<td><span class="pill '+kp+'">'+esc(kd)+'</span></td>'+
+    '<td><span class="mt '+mc(s.model)+'">'+esc(sm(s.model))+'</span></td>'+
+    '<td style="color:var(--mu)">'+ft(s.totalTokens)+'</td>'+
+    '<td style="color:var(--mu);font-size:11px">'+fr(s.updatedAt||s.lastActiveAt)+'</td></tr>';}).join('');
+  document.getElementById('tb-se-body').innerHTML=rows||'<tr><td colspan="5"><div class="empty">No sessions</div></td></tr>';
+  var ov=ss.slice(0,6).map(function(s){var kd=skind(s),kp=mp[kd]||'pmu';
+    return'<tr><td><span class="pill '+kp+'" style="margin-right:6px">'+esc(kd)+'</span><span style="color:var(--mu)">'+esc(sk(s.key))+'</span></td>'+
+    '<td><span class="mt '+mc(s.model)+'">'+esc(sm(s.model))+'</span></td>'+
+    '<td style="color:var(--mu)">'+ft(s.totalTokens)+'</td>'+
+    '<td style="color:var(--mu);font-size:11px">'+fr(s.updatedAt||s.lastActiveAt)+'</td></tr>';}).join('');
+  document.getElementById('ov-se').innerHTML=ov||'<tr><td colspan="4"><div class="empty">No sessions</div></td></tr>';
+}
+
+function renderNodes(ns){
+  var on=ns.filter(function(n){return n.connected;});
+  document.getElementById('cnt-no').textContent=ns.length;
+  document.getElementById('tb-no').textContent=on.length;
+  document.getElementById('sv-no').textContent=on.length;
+  document.getElementById('ss-no').textContent=ns.length+' total paired';
+  var rows=ns.map(function(n){
+    var caps=(n.caps||[]).map(function(c){return'<span class="cap">'+esc(c)+'</span>';}).join('');
+    return'<tr><td style="font-weight:500">'+esc(n.displayName||'unknown')+'</td>'+
+    '<td style="color:var(--mu)">'+esc(n.platform||'—')+'</td>'+
+    '<td style="color:var(--mu);font-size:10px;font-family:monospace">'+(n.nodeId?n.nodeId.slice(0,12)+'…':'—')+'</td>'+
+    '<td><span class="pill '+(n.connected?'pg':'pmu')+'">'+(n.connected?'● online':'○ offline')+'</span></td>'+
+    '<td>'+(caps||'<span style="color:var(--mu);font-size:11px">none</span>')+'</td></tr>';}).join('');
+  document.getElementById('tb-no-body').innerHTML=rows||'<tr><td colspan="5"><div class="empty">No nodes</div></td></tr>';
+}
+
+function renderCrons(cs){
+  var en=cs.filter(function(c){return c.enabled!==false;});
+  document.getElementById('cnt-cr').textContent=cs.length;
+  document.getElementById('tb-cr').textContent=cs.length;
+  document.getElementById('sv-cr').textContent=cs.length;
+  document.getElementById('ss-cr').textContent=en.length+' enabled';
+  var rows=cs.map(function(j){
+    var st=j.state||{};
+    var ok=st.lastStatus==='ok';
+    var ec=st.consecutiveErrors||0;
+    var stHtml=!st.lastStatus?'<span style="color:var(--mu)">—</span>':
+      ok?'<span style="color:var(--gn)">✓ ok</span>'+(ec?'<br><span style="color:var(--rd);font-size:10px">'+ec+' errs</span>':''):
+      '<span style="color:var(--rd)">✗ error</span>'+(ec?'<br><span style="color:var(--rd);font-size:10px">'+ec+' consec</span>':'');
+    var dis=j.enabled===false?'<br><span style="color:var(--mu);font-size:10px">disabled</span>':'';
+    var task=ts(j.payload);
+    return'<tr>'+
+    '<td><div style="font-weight:500;color:var(--tx)">'+esc(j.name||j.id||'—')+'</div>'+
+    '<div class="ctask" title="'+esc(task)+'">'+esc(task)+'</div></td>'+
+    '<td>'+fsc(j.schedule)+'</td>'+
+    '<td><span class="mt '+mc(j.payload&&j.payload.model)+'">'+esc(sm(j.payload&&j.payload.model))+'</span></td>'+
+    '<td>'+fnext(j)+dis+'</td>'+
+    '<td style="color:var(--mu);font-size:11px">'+fr(st.lastRunAtMs)+'</td>'+
+    '<td style="color:var(--mu);font-size:11px">'+fd(st.lastDurationMs)+'</td>'+
+    '<td>'+stHtml+'</td></tr>';}).join('');
+  document.getElementById('tb-cr-body').innerHTML=rows||'<tr><td colspan="7"><div class="empty">No cron jobs</div></td></tr>';
+}
+
+function renderState(d){
+  if(d.sessions)renderSessions(d.sessions);
+  if(d.nodes)renderNodes(d.nodes);
+  if(d.crons)renderCrons(d.crons);
+  if(d.sessions&&d.nodes&&d.crons)renderNow(d.sessions,d.nodes,d.crons);
+  if(d.uptime){if(!sst)sst=Date.now()-d.uptime;document.getElementById('sv-up').textContent=fu(d.uptime);}
+  if(d.lastUpdated)document.getElementById('lu').textContent='updated '+fr(d.lastUpdated);
+}
+
+setInterval(function(){if(sst)document.getElementById('sv-up').textContent=fu(Date.now()-sst);},1000);
+
+function connect(){
+  var url=(location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/ws';
+  ws=new WebSocket(url);
+  ws.onopen=function(){document.getElementById('wsd').classList.add('on');document.getElementById('wss').textContent='live';af('ws','Connected','var(--gn)');clearTimeout(rt);};
+  ws.onmessage=function(e){var m=JSON.parse(e.data);if(m.type==='init'){renderState(m.state);af('init','Dashboard initialized','var(--or)');}else if(m.type==='state'){renderState(m.state);}else if(m.type==='heartbeat'){}};
+  ws.onclose=function(){document.getElementById('wsd').classList.remove('on');document.getElementById('wss').textContent='reconnecting';af('ws','Disconnected — retrying...','var(--rd)');rt=setTimeout(connect,3000);};
+  ws.onerror=function(){};
+}
+connect();
+</script>
+</body>
+</html>

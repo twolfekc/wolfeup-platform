@@ -1,0 +1,23 @@
+{
+  "name": "polymarket-bot",
+  "version": "1.0.0",
+  "description": "Polymarket paper trading intelligence system",
+  "main": "start-all.js",
+  "scripts": {
+    "init-db": "node init-db.js",
+    "price-feed": "node collect/price-feed.js",
+    "poly-odds": "node collect/poly-odds.js",
+    "fear-greed": "node collect/fear-greed.js",
+    "news": "node collect/news-scraper.js",
+    "aggregate": "node engine/aggregator.js",
+    "dashboard": "node dashboard/server.js",
+    "start": "node start-all.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "express": "^4.18.3",
+    "ws": "^8.16.0",
+    "node-cron": "^3.0.3",
+    "node-fetch": "^2.7.0"
+  }
+}

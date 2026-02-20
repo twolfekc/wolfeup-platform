@@ -1,0 +1,26 @@
+{
+  "name": "wolfeup-auth-service",
+  "version": "1.0.0",
+  "description": "WebAuthn + password auth service for wolfeup.com",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "^13.0.0",
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.0.0",
+    "connect-sqlite3": "^0.9.14",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.5.0",
+    "express-session": "^1.18.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "uuid": "^10.0.0"
+  }
+}

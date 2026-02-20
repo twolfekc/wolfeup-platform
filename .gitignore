@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/
+
+# Build output
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+auth-profiles.json
+servers.json
+
+# Data & state
+.data/
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Docker
+docker-compose.override.yml
+
+# Backups & temp
+*.bak
+*.tmp
+*.old
+*.orig
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.pid
+*.seed

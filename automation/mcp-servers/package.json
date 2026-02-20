@@ -1,0 +1,22 @@
+{
+  "name": "mcp-servers",
+  "version": "1.0.0",
+  "dependencies": {
+    "@modelcontextprotocol/server-brave-search": "latest",
+    "@modelcontextprotocol/server-everything": "latest",
+    "@modelcontextprotocol/server-filesystem": "latest",
+    "@modelcontextprotocol/server-gdrive": "^2025.1.14",
+    "@modelcontextprotocol/server-github": "latest",
+    "@modelcontextprotocol/server-memory": "latest",
+    "@modelcontextprotocol/server-puppeteer": "latest",
+    "@modelcontextprotocol/server-sequential-thinking": "latest",
+    "@playwright/mcp": "latest",
+    "@upstash/context7-mcp": "^2.1.1",
+    "@wonderwhy-er/desktop-commander": "latest",
+    "ios-simulator-mcp": "latest",
+    "mcp-obsidian": "^1.0.0",
+    "mcp-proxy": "^6.4.0",
+    "mcp-server-commands": "latest",
+    "xcodebuildmcp": "latest"
+  }
+}

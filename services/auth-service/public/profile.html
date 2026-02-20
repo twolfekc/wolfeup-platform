@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Account — WolfeUp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@simplewebauthn/browser@13/dist/bundle/index.es5.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #161b27; --surface2: #1e2636;
+      --border: #2a3347; --border2: #3a4560; --text: #e2e8f0; --muted: #94a3b8;
+      --accent: #6366f1; --accent-h: #818cf8; --accent-d: #4f46e5;
+      --danger: #ef4444; --success: #22c55e; --radius: 12px; --radius-sm: 8px;
+    }
+    html, body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
+    body { padding: 0; background-image: radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.07) 0%, transparent 50%); }
+
+    /* Header */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px; border-bottom: 1px solid var(--border);
+      background: var(--surface); position: sticky; top: 0; z-index: 10;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-d));
+      border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
+    .logo-text span { color: var(--accent-h); }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .user-badge { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-d));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; color: #fff;
+    }
+
+    /* Main layout */
+    .main { max-width: 760px; margin: 0 auto; padding: 40px 24px; }
+    .page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 36px; }
+
+    /* Sections */
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
+    .section-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .section-title .icon { font-size: 18px; }
+    .section-body { padding: 20px 24px; }
+
+    /* Passkey list */
+    .passkey-list { display: flex; flex-direction: column; gap: 10px; }
+    .passkey-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 14px 16px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); transition: border-color 0.15s;
+    }
+    .passkey-item:hover { border-color: var(--border2); }
+    .passkey-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+    .passkey-device-icon { font-size: 28px; flex-shrink: 0; }
+    .passkey-info { min-width: 0; }
+    .passkey-name {
+      font-size: 14px; font-weight: 500; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .passkey-name-input {
+      font-size: 14px; font-weight: 500; background: var(--surface); border: 1px solid var(--accent);
+      border-radius: 6px; color: var(--text); padding: 4px 8px; font-family: inherit; outline: none; width: 200px;
+    }
+    .passkey-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .passkey-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .btn-icon-sm {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-size: 13px; padding: 6px 10px; cursor: pointer;
+      font-family: inherit; transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+    }
+    .btn-icon-sm:hover { border-color: var(--border2); color: var(--text); }
+    .btn-icon-sm.danger:hover { border-color: var(--danger); color: #fca5a5; background: rgba(239,68,68,0.08); }
+    .btn-icon-sm.save { border-color: var(--success); color: #86efac; }
+
+    .empty-state { text-align: center; padding: 32px; color: var(--muted); font-size: 14px; }
+    .empty-state .empty-icon { font-size: 36px; margin-bottom: 12px; display: block; opacity: 0.5; }
+
+    /* Account info */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .info-item label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block; }
+    .info-item .value { font-size: 14px; color: var(--text); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 9px 18px; border: none; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-d)); color: #fff; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(99,102,241,0.4); }
+    .btn-ghost { background: none; border: 1px solid var(--border); color: var(--muted); }
+    .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+    .btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+    /* Alert */
+    .alert { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; border: 1px solid transparent; margin-bottom: 16px; }
+    .alert-error { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+    .alert-success { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3); color: #86efac; }
+    #page-alert { display: none; }
+    #page-alert.show { display: block; }
+
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Logout */
+    .logout-btn {
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--muted); font-size: 13px; padding: 7px 14px; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+    .logout-btn:hover { border-color: var(--danger); color: #fca5a5; }
+
+    @media (max-width: 600px) {
+      .header { padding: 12px 16px; }
+      .main { padding: 24px 16px; }
+      .info-grid { grid-template-columns: 1fr; }
+      .passkey-item { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="/" class="logo">
+      <div class="logo-icon">🐺</div>
+      <div class="logo-text">Wolfe<span>Up</span></div>
+    </a>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-avatar" id="avatar-initials">?</div>
+        <span id="header-username">Loading…</span>
+      </div>
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page-title">My Account</div>
+    <div class="page-sub">Manage your passkeys and account settings</div>
+
+    <div id="page-alert" class="alert"></div>
+
+    <!-- Passkeys Section -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">🔑</span> Passkeys</div>
+        <button class="btn btn-primary" id="add-passkey-btn" onclick="addPasskey()">+ Add Passkey</button>
+      </div>
+      <div class="section-body">
+        <div id="passkey-alert" style="display:none" class="alert"></div>
+        <div class="passkey-list" id="passkey-list">
+          <div class="empty-state"><span class="spinner"></span> Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Info Section -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">👤</span> Account Info</div>
+      </div>
+      <div class="section-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Username</label>
+            <div class="value" id="info-username">—</div>
+          </div>
+          <div class="info-item">
+            <label>Email</label>
+            <div class="value" id="info-email">—</div>
+          </div>
+          <div class="info-item">
+            <label>Member Since</label>
+            <div class="value" id="info-joined">—</div>
+          </div>
+          <div class="info-item">
+            <label>Last Login</label>
+            <div class="value" id="info-last-login">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    function showPageAlert(msg, type = 'error') {
+      const el = $('page-alert');
+      el.className = `alert alert-${type} show`;
+      el.textContent = msg;
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function showPkAlert(msg, type = 'error') {
+      const el = $('passkey-alert');
+      el.className = `alert alert-${type}`;
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    async function apiFetch(url, opts = {}) {
+      try {
+        const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, credentials: 'include', ...opts });
+        const data = await res.json().catch(() => ({}));
+        return { ok: res.ok, status: res.status, data };
+      } catch (e) {
+        return { ok: false, status: 0, data: { error: 'Service unavailable' } };
+      }
+    }
+
+    function getDeviceIcon(name = '') {
+      const n = name.toLowerCase();
+      if (n.includes('iphone') || n.includes('ipad') || n.includes('face id')) return '📱';
+      if (n.includes('mac') || n.includes('touch id') || n.includes('icloud')) return '🍎';
+      if (n.includes('windows') || n.includes('hello')) return '🪟';
+      if (n.includes('android') || n.includes('fingerprint')) return '📱';
+      if (n.includes('yubikey') || n.includes('security key')) return '🔐';
+      return '🔑';
+    }
+
+    function formatDate(iso) {
+      if (!iso) return 'Never';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function formatRelative(iso) {
+      if (!iso) return 'Never';
+      const diff = Date.now() - new Date(iso).getTime();
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return 'Just now';
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      const days = Math.floor(h / 24);
+      if (days < 30) return `${days}d ago`;
+      return formatDate(iso);
+    }
+
+    // ── Load user ─────────────────────────────────────────────────────
+    async function loadUser() {
+      const { ok, data } = await apiFetch('/auth/me');
+      if (!ok) {
+        window.location.href = '/?redirect=/profile.html';
+        return;
+      }
+      const u = data.user || data;
+      $('header-username').textContent = u.username || u.email;
+      $('avatar-initials').textContent = (u.username || u.email || '?')[0].toUpperCase();
+      $('info-username').textContent = u.username || '—';
+      $('info-email').textContent = u.email || '—';
+      $('info-joined').textContent = formatDate(u.created_at);
+      $('info-last-login').textContent = formatRelative(u.last_login);
+
+      // Google link status
+      const googleStatusEl = document.getElementById('google-link-status');
+      if (googleStatusEl) {
+        googleStatusEl.textContent = u.googleLinked ? '✅ Connected' : 'Not connected';
+        googleStatusEl.style.color = u.googleLinked ? '#22c55e' : '#94a3b8';
+      }
+
+      // Show passkey enrollment banner for Google-login users with no passkeys
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('welcome') === '1') {
+        history.replaceState({}, '', '/profile.html');
+        if ((u.passkeyCount || 0) === 0) {
+          showWelcomeBanner();
+        }
+      }
+    }
+
+    // ── Load passkeys ─────────────────────────────────────────────────
+    async function loadPasskeys() {
+      const { ok, data } = await apiFetch('/auth/passkey/list');
+      const list = $('passkey-list');
+
+      if (!ok) {
+        list.innerHTML = `<div class="empty-state">Failed to load passkeys.</div>`;
+        return;
+      }
+
+      const passkeys = data.passkeys || [];
+      if (passkeys.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-icon">🔑</span>
+            No passkeys yet. Add one to sign in without a password.
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = passkeys.map(pk => `
+        <div class="passkey-item" data-id="${pk.id}">
+          <div class="passkey-left">
+            <div class="passkey-device-icon">${getDeviceIcon(pk.device_name)}</div>
+            <div class="passkey-info">
+              <div class="passkey-name" id="pk-name-${pk.id}">${pk.device_name || 'Passkey'}</div>
+              <div class="passkey-meta">
+                Added ${formatDate(pk.created_at)}
+                ${pk.last_used ? ` · Last used ${formatRelative(pk.last_used)}` : ' · Never used'}
+              </div>
+            </div>
+          </div>
+          <div class="passkey-actions" id="pk-actions-${pk.id}">
+            <button class="btn-icon-sm" onclick="startRename('${pk.id}')">✏️ Rename</button>
+            <button class="btn-icon-sm danger" onclick="deletePasskey('${pk.id}', '${(pk.device_name||'this passkey').replace(/'/g,"\\'")}')">🗑 Remove</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ── Rename ────────────────────────────────────────────────────────
+    function startRename(id) {
+      const nameEl = $(`pk-name-${id}`);
+      const currentName = nameEl.textContent;
+      const actionsEl = $(`pk-actions-${id}`);
+
+      nameEl.innerHTML = `<input class="passkey-name-input" id="pk-input-${id}" value="${currentName}" maxlength="64" />`;
+      actionsEl.innerHTML = `
+        <button class="btn-icon-sm save" onclick="saveRename('${id}')">Save</button>
+        <button class="btn-icon-sm" onclick="loadPasskeys()">Cancel</button>
+      `;
+      $(`pk-input-${id}`).focus();
+      $(`pk-input-${id}`).select();
+      $(`pk-input-${id}`).addEventListener('keydown', e => {
+        if (e.key === 'Enter') saveRename(id);
+        if (e.key === 'Escape') loadPasskeys();
+      });
+    }
+
+    async function saveRename(id) {
+      const input = $(`pk-input-${id}`);
+      if (!input) return;
+      const name = input.value.trim();
+      if (!name) return;
+
+      const { ok, data } = await apiFetch(`/auth/passkey/${id}/rename`, {
+        method: 'PATCH', body: JSON.stringify({ deviceName: name }),
+      });
+
+      if (ok) {
+        showPkAlert('Passkey renamed.', 'success');
+        loadPasskeys();
+      } else {
+        showPkAlert(data.error || 'Failed to rename passkey.');
+      }
+    }
+
+    // ── Delete ────────────────────────────────────────────────────────
+    async function deletePasskey(id, name) {
+      if (!confirm(`Remove "${name}"? You won't be able to use it to sign in anymore.`)) return;
+
+      const { ok, data } = await apiFetch(`/auth/passkey/${id}`, { method: 'DELETE' });
+
+      if (ok) {
+        showPkAlert('Passkey removed.', 'success');
+        loadPasskeys();
+      } else {
+        showPkAlert(data.error || 'Failed to remove passkey.');
+        $('passkey-alert').style.display = 'block';
+      }
+    }
+
+    // ── Add passkey ───────────────────────────────────────────────────
+    // ── Add platform passkey (Face ID / Touch ID / Windows Hello) ──────────────
+    async function addPlatformPasskey() {
+      const btn = document.getElementById('add-platform-passkey-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Setting up…'; }
+
+      const { ok: optOk, data: options } = await apiFetch('/auth/passkey/register/options/platform', {
+        method: 'POST', body: JSON.stringify({}),
+      });
+
+      if (!optOk) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Set Up Face ID / Touch ID'; }
+        showPkAlert(options.error || 'Could not start platform passkey setup.');
+        return;
+      }
+
+      let attestation;
+      try {
+        attestation = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
+      } catch (err) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Set Up Face ID / Touch ID'; }
+        if (err.name === 'NotAllowedError') {
+          showPkAlert('Biometric setup cancelled. Try again or use the + Add Passkey button.');
+        } else if (err.name !== 'AbortError') {
+          showPkAlert(err.message || 'Passkey setup failed.');
+        }
+        return;
+      }
+
+      const { ok, data } = await apiFetch('/auth/passkey/register/verify', {
+        method: 'POST', body: JSON.stringify(attestation),
+      });
+
+      if (btn) { btn.disabled = false; btn.textContent = 'Set Up Face ID / Touch ID'; }
+
+      if (ok) {
+        showPkAlert('Face ID / Touch ID set up! You can now sign in with biometrics.', 'success');
+        loadPasskeys();
+      } else {
+        showPkAlert(data.error || 'Failed to save platform passkey.');
+      }
+    }
+
+    async function addPasskey() {
+      const btn = $('add-passkey-btn');
+      btn.disabled = true;
+      btn.textContent = 'Setting up…';
+
+      const { ok: optOk, data: options } = await apiFetch('/auth/passkey/register/options', {
+        method: 'POST', body: JSON.stringify({}),
+      });
+
+      if (!optOk) {
+        btn.disabled = false;
+        btn.textContent = '+ Add Passkey';
+        showPkAlert(options.error || 'Could not start passkey setup.');
+        return;
+      }
+
+      let attestation;
+      try {
+        attestation = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '+ Add Passkey';
+        if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+          showPkAlert(err.message || 'Passkey setup failed.');
+        } else if (err.name === 'NotAllowedError') {
+          showPkAlert('Passkey setup cancelled.');
+        }
+        return;
+      }
+
+      const { ok, data } = await apiFetch('/auth/passkey/register/verify', {
+        method: 'POST', body: JSON.stringify(attestation),
+      });
+
+      btn.disabled = false;
+      btn.textContent = '+ Add Passkey';
+
+      if (ok) {
+        showPkAlert('New passkey added!', 'success');
+        loadPasskeys();
+      } else {
+        showPkAlert(data.error || 'Failed to save passkey.');
+      }
+    }
+
+    // ── Logout ────────────────────────────────────────────────────────
+    async function logout() {
+      await apiFetch('/auth/logout', { method: 'POST' });
+      window.location.href = '/';
+    }
+
+    // ── Welcome Banner (post-Google-login passkey enrollment) ────────
+    function showWelcomeBanner() {
+      const existing = document.getElementById('welcome-passkey-banner');
+      if (existing) return;
+      const banner = document.createElement('div');
+      banner.id = 'welcome-passkey-banner';
+      banner.style.cssText = 'background:#1a2744;border:1px solid #3b5bdb;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
+      banner.innerHTML = `
+        <div>
+          <div style="font-weight:600;font-size:15px;margin-bottom:4px;">🔑 Sign in faster next time</div>
+          <div style="font-size:13px;color:#94a3b8;">Add Face ID or Touch ID to skip the Google sign-in screen.</div>
+        </div>
+        <button onclick="addPlatformPasskey();document.getElementById('welcome-passkey-banner').remove();"
+                style="background:#3b5bdb;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+          Add Passkey
+        </button>`;
+      const firstCard = document.querySelector('.card');
+      if (firstCard) firstCard.parentNode.insertBefore(banner, firstCard);
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────
+    loadUser();
+    loadPasskeys();
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+services:
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth_service
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./data:/data
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DB_PATH=/data/auth.db
+      - SESSION_SECRET=${SESSION_SECRET:-please-set-a-secure-secret-in-env}
+      - RP_ID=wolfeup.com
+      - ORIGIN=https://auth.wolfeup.com
+      - ADMIN_IP=${ADMIN_IP:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL:-https://auth.wolfeup.com/auth/google/callback}
+      - JWT_SECRET=${JWT_SECRET}
+      - APPLE_CLIENT_ID=${APPLE_CLIENT_ID:-}
+      - APPLE_REDIRECT_URI=${APPLE_REDIRECT_URI:-https://auth.wolfeup.com/auth/apple/callback}
+      - APPLE_KEY_PATH=${APPLE_KEY_PATH:-/app/AuthKey_U7ZGBFH5U7.p8}
+      - APPLE_KEY_ID=${APPLE_KEY_ID:-U7ZGBFH5U7}
+      - APPLE_TEAM_ID=${APPLE_TEAM_ID:-D4MC63SS36}
+      - APPLE_SCOPE=${APPLE_SCOPE:-name email}
+      - APPLE_RESPONSE_MODE=${APPLE_RESPONSE_MODE:-form_post}
+      - APPLE_RESPONSE_TYPE=${APPLE_RESPONSE_TYPE:-code id_token}
+    networks:
+      - auth-net
+      - games-frontend
+
+networks:
+  auth-net:
+    driver: bridge
+  games-frontend:
+    external: true
+    name: games-platform_frontend

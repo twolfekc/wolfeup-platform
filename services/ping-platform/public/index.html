@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNS Ping Platform — Live Latency Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header>
+      <div>
+        <h1><span class="icon">📡</span> DNS Ping Platform</h1>
+        <div class="subtitle">Real-time DNS resolver latency monitoring</div>
+      </div>
+      <div class="header-right">
+        <div class="status-badge" id="status-badge">
+          <span class="status-dot"></span>
+          <span id="status-text">Connecting…</span>
+        </div>
+        <button class="btn" onclick="exportCSV()">📥 Export CSV</button>
+      </div>
+    </header>
+
+    <!-- Map -->
+    <div id="map"></div>
+
+    <!-- Summary Cards -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-label">⚡ Fastest Resolver</div>
+        <div class="summary-value green" id="fastest-value">
+          <div class="skeleton skeleton-value"></div>
+        </div>
+        <div class="summary-sub" id="fastest-name">—</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">📊 Average Latency</div>
+        <div class="summary-value blue" id="avg-value">
+          <div class="skeleton skeleton-value"></div>
+        </div>
+        <div class="summary-sub" id="avg-sub">across all resolvers</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">🌐 Resolvers Online</div>
+        <div class="summary-value orange" id="online-value">
+          <div class="skeleton skeleton-value"></div>
+        </div>
+        <div class="summary-sub" id="online-sub">—</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">🔄 Last Scan</div>
+        <div class="summary-value" id="scan-value" style="font-size:1.2rem">
+          <div class="skeleton skeleton-value"></div>
+        </div>
+        <div class="summary-sub" id="scan-sub">—</div>
+      </div>
+    </div>
+
+    <!-- Leaderboard + Charts -->
+    <div class="content-grid">
+      <div class="leaderboard" id="leaderboard">
+        <h3>🏆 Top 10 Fastest</h3>
+        <div id="lb-list">
+          <div class="skeleton skeleton-row"></div>
+          <div class="skeleton skeleton-row"></div>
+          <div class="skeleton skeleton-row"></div>
+        </div>
+      </div>
+      <div class="charts-panel">
+        <h3>📈 Analytics</h3>
+        <div class="chart-tabs">
+          <button class="chart-tab active" data-chart="distribution">Distribution</button>
+          <button class="chart-tab" data-chart="top20">Top 20</button>
+          <button class="chart-tab" data-chart="timeline">Timeline</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-distribution"></canvas>
+          <canvas id="chart-top20" style="display:none"></canvas>
+          <canvas id="chart-timeline" style="display:none"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input type="text" class="search-box" id="search" placeholder="Search resolvers…">
+      <select class="filter-select" id="filter-provider"><option value="">All Providers</option></select>
+      <select class="filter-select" id="filter-country"><option value="">All Countries</option></select>
+      <select class="filter-select" id="filter-protocol">
+        <option value="">All Protocols</option>
+        <option value="dns">DNS (UDP)</option>
+        <option value="doh">DoH</option>
+      </select>
+      <select class="filter-select" id="filter-latency">
+        <option value="">All Latency</option>
+        <option value="0-10">&lt; 10ms</option>
+        <option value="10-30">10–30ms</option>
+        <option value="30-80">30–80ms</option>
+        <option value="80-200">80–200ms</option>
+        <option value="200+">200ms+</option>
+      </select>
+    </div>
+
+    <!-- Results Table -->
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table class="results-table" id="results-table">
+          <thead>
+            <tr>
+              <th data-sort="rank"># <span class="sort-arrow">↕</span></th>
+              <th data-sort="provider">Provider <span class="sort-arrow">↕</span></th>
+              <th data-sort="name">Name <span class="sort-arrow">↕</span></th>
+              <th data-sort="city">City <span class="sort-arrow">↕</span></th>
+              <th data-sort="protocol">Proto <span class="sort-arrow">↕</span></th>
+              <th data-sort="latency">Latency <span class="sort-arrow">↕</span></th>
+              <th data-sort="min">Min <span class="sort-arrow">↕</span></th>
+              <th data-sort="avg">Avg <span class="sort-arrow">↕</span></th>
+              <th data-sort="p95">P95 <span class="sort-arrow">↕</span></th>
+              <th data-sort="status">Status <span class="sort-arrow">↕</span></th>
+              <th>Trend</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="11" style="text-align:center;padding:40px;color:var(--text-muted)">Waiting for data…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>DNS Ping Platform • Testing <span id="resolver-count">—</span> resolvers • Built with Node.js + Express + WebSocket</footer>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

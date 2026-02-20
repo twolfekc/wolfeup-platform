@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loup — Agent Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐺</text></svg>">
+<style>
+:root {
+  --bg: #0a0c10; --surface: #12151c; --surface2: #1a1e28; --surface3: #222738;
+  --border: #262b3a; --text: #d1d5e0; --text-dim: #6b7280; --text-bright: #f0f2f5;
+  --accent: #3b82f6; --accent-glow: rgba(59,130,246,0.12);
+  --green: #22c55e; --green-dim: rgba(34,197,94,0.15);
+  --amber: #f59e0b; --amber-dim: rgba(245,158,11,0.15);
+  --red: #ef4444; --red-dim: rgba(239,68,68,0.15);
+  --cyan: #06b6d4; --purple: #a855f7; --pink: #ec4899;
+  --mono: 'SF Mono','Fira Code','JetBrains Mono','Cascadia Code',monospace;
+  --sans: -apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden;font-size:14px}
+
+/* Header */
+header{position:sticky;top:0;z-index:100;background:rgba(10,12,16,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700}
+.logo-wolf{font-size:22px}
+.status-bar{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--text-dim)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.dot.live{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+.dot.off{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Nav */
+nav{display:flex;gap:1px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
+nav button{background:none;border:none;color:var(--text-dim);padding:11px 14px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+nav button:hover{color:var(--text)}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* Layout */
+main{padding:16px 24px;max-width:1440px;margin:0 auto}
+.page{display:none}.page.active{display:block}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.c{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px}
+.c-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.c-val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--text-bright)}
+.c-sub{font-size:10px;color:var(--text-dim);margin-top:3px}
+.c-accent .c-val{color:var(--accent)}
+.c-green .c-val{color:var(--green)}
+.c-amber .c-val{color:var(--amber)}
+.c-red .c-val{color:var(--red)}
+
+/* Plan cards */
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:20px}
+.plan{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden}
+.plan-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.plan-model{font-weight:700;font-size:15px;color:var(--text-bright)}
+.plan-provider{font-size:11px;color:var(--text-dim);margin-top:2px}
+.plan-badge{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:600}
+.plan-bar{height:6px;background:var(--surface3);border-radius:3px;margin:8px 0;overflow:hidden}
+.plan-bar-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.plan-stats{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);font-family:var(--mono)}
+.plan-detail{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;font-size:11px}
+.plan-detail span{color:var(--text-dim)}
+.plan-detail strong{color:var(--text);font-family:var(--mono)}
+
+/* Mini chart (CSS bar chart) */
+.mini-chart{display:flex;align-items:flex-end;gap:2px;height:50px;margin-top:12px}
+.mini-bar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-width:3px;transition:height .3s;position:relative}
+.mini-bar:hover{opacity:.8}
+.mini-bar .tip{display:none;position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border);padding:3px 6px;border-radius:4px;font-size:9px;white-space:nowrap;color:var(--text);font-family:var(--mono);z-index:10}
+.mini-bar:hover .tip{display:block}
+
+/* Feed */
+.feed-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.feed-top{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600}
+.feed-top .ctrls{display:flex;gap:6px}
+.feed-top .ctrls button,.fbtn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:3px 8px;border-radius:5px;font-size:10px;cursor:pointer}
+.feed-top .ctrls button:hover,.fbtn:hover{color:var(--text);border-color:var(--accent)}
+.feed-top .ctrls button.on,.fbtn.on{background:var(--accent-glow);color:var(--accent);border-color:var(--accent)}
+.filters{padding:6px 14px;border-bottom:1px solid var(--border);display:flex;gap:4px;flex-wrap:wrap}
+#feed{height:58vh;overflow-y:auto;padding:2px 0;font-family:var(--mono);font-size:12px;line-height:1.55}
+#feed::-webkit-scrollbar{width:5px}
+#feed::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.ev{padding:2px 14px;display:flex;gap:8px;animation:fi .25s;border-left:3px solid transparent}
+.ev:hover{background:rgba(255,255,255,.015)}
+.ev.hide{display:none}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1}}
+.ev-t{color:var(--text-dim);min-width:58px;flex-shrink:0;font-size:10px}
+.ev-s{color:var(--text-dim);font-size:9px;min-width:52px;flex-shrink:0;opacity:.6}
+.ev-k{min-width:70px;flex-shrink:0;font-weight:700;text-transform:uppercase;font-size:9px;letter-spacing:.4px;padding-top:1px}
+.ev-b{color:var(--text);word-break:break-word;flex:1}
+.ev[data-t=message]{border-left-color:var(--accent)}.ev[data-t=message] .ev-k{color:var(--accent)}
+.ev[data-t=tool_call]{border-left-color:var(--cyan)}.ev[data-t=tool_call] .ev-k{color:var(--cyan)}
+.ev[data-t=tool_result]{border-left-color:#0e7490}.ev[data-t=tool_result] .ev-k{color:#0e7490}
+.ev[data-t=thinking]{border-left-color:var(--purple)}.ev[data-t=thinking] .ev-k{color:var(--purple)}
+.ev[data-t=response]{border-left-color:var(--green)}.ev[data-t=response] .ev-k{color:var(--green)}
+.ev[data-t=cron_status]{border-left-color:var(--amber)}.ev[data-t=cron_status] .ev-k{color:var(--amber)}
+.ev[data-t=error]{border-left-color:var(--red)}.ev[data-t=error] .ev-k{color:var(--red)}
+.ev[data-t=system] .ev-k{color:var(--text-dim)}
+
+/* Usage detail grids */
+.ugrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ucard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px}
+.ucard h3{font-size:13px;color:var(--text-dim);margin-bottom:10px;font-weight:600}
+.bar-r{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bar-l{font-size:11px;min-width:110px;color:var(--text-dim);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-t{flex:1;height:20px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.bar-f{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:9px;font-family:var(--mono);color:#fff;min-width:24px;transition:width .5s}
+
+/* Cron table */
+.ctbl{width:100%;border-collapse:collapse}
+.ctbl th{text-align:left;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--border)}
+.ctbl td{padding:8px 10px;font-size:12px;border-bottom:1px solid var(--border);font-family:var(--mono)}
+.cdot{display:inline-block;width:7px;height:7px;border-radius:50%}
+.cdot.on{background:var(--green)}.cdot.off{background:var(--text-dim)}
+
+/* System meters */
+.meter{margin-bottom:14px}
+.meter-h{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.meter-t{height:7px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.meter-f{height:100%;border-radius:4px;transition:width 1s}
+
+/* Empty */
+.empty{text-align:center;padding:50px 20px;color:var(--text-dim)}
+.empty .ico{font-size:40px;margin-bottom:8px}
+
+/* Responsive */
+@media(max-width:768px){.cards{grid-template-columns:repeat(2,1fr)}.ugrid,.plan-grid{grid-template-columns:1fr}main{padding:10px}#feed{height:50vh}.ev-s{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="logo-wolf">🐺</span> Loup</div>
+  <div class="status-bar">
+    <span><span class="dot" id="cDot"></span><span id="cTxt">Connecting...</span></span>
+    <span id="viewers"></span>
+    <span id="uptime"></span>
+  </div>
+</header>
+
+<nav>
+  <button class="active" data-p="live">⚡ Live</button>
+  <button data-p="usage">📊 Usage</button>
+  <button data-p="agents">🤖 Agents</button>
+  <button data-p="crons">⏰ Crons</button>
+  <button data-p="system">🖥 System</button>
+</nav>
+
+<main>
+  <!-- LIVE -->
+  <div class="page active" id="p-live">
+    <div class="cards" id="live-cards"></div>
+    <div class="feed-box">
+      <div class="feed-top">
+        <span>🔴 Live Stream</span>
+        <div class="ctrls">
+          <button id="pauseBtn" onclick="tPause()">Pause</button>
+          <button onclick="clearFeed()">Clear</button>
+          <button id="scrollBtn" class="on" onclick="tScroll()">Auto-scroll</button>
+        </div>
+      </div>
+      <div class="filters" id="filters"></div>
+      <div id="feed"></div>
+    </div>
+  </div>
+
+  <!-- USAGE -->
+  <div class="page" id="p-usage">
+    <div class="plan-grid" id="plans"></div>
+    <div class="cards" id="usage-cards"></div>
+    <div class="ugrid" id="usage-detail"></div>
+  </div>
+
+  <!-- AGENTS -->
+  <div class="page" id="p-agents"><div id="agents-c"></div></div>
+
+  <!-- CRONS -->
+  <div class="page" id="p-crons"><div id="crons-c"></div></div>
+
+  <!-- SYSTEM -->
+  <div class="page" id="p-system">
+    <div class="cards" id="sys-cards"></div>
+    <div class="c" id="sys-meters" style="margin-top:14px"></div>
+  </div>
+</main>
+
+<script>
+let ws,conn=false,paused=false,scrl=true,stats={totalEvents:0,eventsByType:{},tokenUsage:{input:0,output:0},costEstimate:0,modelUsage:{},_sys:null,_dash:null};
+let usage=null,cronJobs=[],sessions=[],hiddenTypes=new Set(),reconDelay=1000;
+const types=['message','thinking','tool_call','tool_result','response','system','cron_status','session_status','error'];
+const colors=['#3b82f6','#06b6d4','#a855f7','#22c55e','#f59e0b','#ef4444','#ec4899','#14b8a6'];
+
+// Nav
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById('p-'+b.dataset.p).classList.add('active');
+  updateAll();
+});
+
+// Filters
+(function(){const c=document.getElementById('filters');types.forEach(t=>{const b=document.createElement('button');b.className='fbtn on';b.textContent=t.replace(/_/g,' ');b.onclick=()=>{if(hiddenTypes.has(t)){hiddenTypes.delete(t);b.classList.add('on')}else{hiddenTypes.add(t);b.classList.remove('on')}document.querySelectorAll('.ev').forEach(e=>e.classList.toggle('hide',hiddenTypes.has(e.dataset.t)))};c.appendChild(b)})})();
+
+// WS
+function connect(){
+  const p=location.protocol==='https:'?'wss:':'ws:';
+  ws=new WebSocket(`${p}//${location.host}/ws`);
+  ws.onopen=()=>{conn=true;reconDelay=1000;updConn();addEv('system','Connected')};
+  ws.onmessage=e=>{const d=JSON.parse(e.data);
+    if(d.type==='init'){Object.assign(stats,d.stats||{});if(d.usage)usage=d.usage;(d.events||[]).forEach(v=>addEv(v.type,fmt(v),v.ts,v.session));updateAll()}
+    else if(d.type==='event')handleEv(d.event);
+    else if(d.type==='heartbeat'){if(d.system)stats._sys=d.system;if(d.dashboard)stats._dash=d.dashboard;updSys();updLive()}
+    else if(d.type==='usage_update'){usage=d.usage;updUsage()}
+  };
+  ws.onclose=()=>{conn=false;updConn();setTimeout(connect,reconDelay);reconDelay=Math.min(reconDelay*2,30000)};
+  ws.onerror=()=>{};
+}
+function handleEv(ev){
+  stats.totalEvents++;stats.eventsByType[ev.type]=(stats.eventsByType[ev.type]||0)+1;
+  if(ev.tokens){stats.tokenUsage.input+=(ev.tokens.input||0);stats.tokenUsage.output+=(ev.tokens.output||0)}
+  if(ev.cost)stats.costEstimate+=ev.cost;if(ev.model)stats.modelUsage[ev.model]=(stats.modelUsage[ev.model]||0)+1;
+  if(ev.type==='cron_status'&&ev.jobs)cronJobs=ev.jobs;
+  if(ev.type==='session_status'&&ev.sessions)sessions=ev.sessions;
+  if(!paused)addEv(ev.type,fmt(ev),ev.ts,ev.session);updLive();
+}
+function updConn(){document.getElementById('cDot').className='dot '+(conn?'live':'off');document.getElementById('cTxt').textContent=conn?'Live':'Offline'}
+
+// Feed
+const feed=document.getElementById('feed');
+function addEv(type,body,ts,session){
+  const el=document.createElement('div');el.className='ev'+(hiddenTypes.has(type)?' hide':'');el.dataset.t=type;
+  const t=ts?new Date(ts).toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}):new Date().toLocaleTimeString('en-US',{hour12:false});
+  el.innerHTML=`<span class="ev-t">${t}</span><span class="ev-s">${esc(session||'')}</span><span class="ev-k">${type.replace(/_/g,' ')}</span><span class="ev-b">${esc(body)}</span>`;
+  feed.appendChild(el);while(feed.children.length>300)feed.removeChild(feed.firstChild);
+  if(scrl)requestAnimationFrame(()=>feed.scrollTop=feed.scrollHeight);
+}
+function fmt(ev){
+  switch(ev.type){
+    case'message':return`${ev.direction==='in'?'→':'←'} ${ev.text||''}`;
+    case'tool_call':return`${ev.tool||'?'}(${tr(typeof ev.params==='string'?ev.params:JSON.stringify(ev.params||''),150)})`;
+    case'tool_result':return`${ev.tool||'?'} → ${tr(ev.result||'',150)}${ev.isError?' ❌':''}`;
+    case'thinking':return ev.text||'...';
+    case'response':return`${ev.model?'['+ev.model.split('/').pop()+'] ':''}${tr(ev.text||'',250)}`;
+    case'cron_status':return`${(ev.jobs||[]).length} cron jobs`;
+    case'session_status':return`${ev.count||0} sessions`;
+    case'system':return ev.text||'';
+    default:return ev.text||ev.message||JSON.stringify(ev).slice(0,120);
+  }
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function tr(s,n){return s&&s.length>n?s.slice(0,n)+'…':(s||'')}
+function tPause(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'Resume':'Pause';document.getElementById('pauseBtn').classList.toggle('on',paused)}
+function tScroll(){scrl=!scrl;document.getElementById('scrollBtn').classList.toggle('on',scrl)}
+function clearFeed(){feed.innerHTML=''}
+
+// Live cards
+function updLive(){
+  const d=stats._dash||{};const u=usage;
+  document.getElementById('live-cards').innerHTML=`
+    <div class="c"><div class="c-label">Session Events</div><div class="c-val">${stats.totalEvents.toLocaleString()}</div></div>
+    <div class="c"><div class="c-label">Viewers</div><div class="c-val">${d.clients||0}</div></div>
+    <div class="c c-accent"><div class="c-label">Total Spend</div><div class="c-val">$${(u?.totals?.cost||stats.costEstimate).toFixed(2)}</div></div>
+    <div class="c c-green"><div class="c-label">Today</div><div class="c-val">$${(u?.today?.cost||0).toFixed(2)}</div><div class="c-sub">${u?.today?.calls||0} calls</div></div>
+    <div class="c"><div class="c-label">API Calls</div><div class="c-val">${fN(u?.totals?.calls||0)}</div></div>
+  `;
+}
+
+// ─── USAGE PAGE ───
+function updUsage(){
+  if(!usage){document.getElementById('plans').innerHTML='<div class="empty"><div class="ico">📊</div><p>Loading usage data...</p></div>';return}
+  const u=usage;
+
+  // Plan cards
+  const planHTML=Object.entries(u.plans||{}).map(([model,p])=>{
+    const pct=p.limit>0?Math.min(100,(p.spent/p.limit*100)):0;
+    const barCol=pct>90?'var(--red)':pct>70?'var(--amber)':'var(--green)';
+    const badgeCol=pct>90?'var(--red-dim);color:var(--red)':pct>70?'var(--amber-dim);color:var(--amber)':'var(--green-dim);color:var(--green)';
+    const remaining=p.limit>0?(p.limit-p.spent):null;
+    const m=u.models[model]||{};
+    return`<div class="plan">
+      <div class="plan-header">
+        <div><div class="plan-model">${model}</div><div class="plan-provider">${p.provider} · ${p.plan}</div></div>
+        <span class="plan-badge" style="background:${badgeCol}">${p.limit>0?pct.toFixed(1)+'%':'Free'}</span>
+      </div>
+      ${p.limit>0?`<div class="plan-bar"><div class="plan-bar-fill" style="width:${pct}%;background:${barCol}"></div></div>
+      <div class="plan-stats"><span>$${p.spent.toFixed(2)} used</span><span>${remaining!==null?'$'+remaining.toFixed(2)+' left':''}</span></div>`:''}
+      <div class="plan-detail">
+        <span>Calls</span><strong>${p.calls.toLocaleString()}</strong>
+        <span>Output Tokens</span><strong>${fN(m.output||0)}</strong>
+        <span>Cache Read</span><strong>${fN(m.cacheRead||0)}</strong>
+        <span>Cache Write</span><strong>${fN(m.cacheWrite||0)}</strong>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('plans').innerHTML=planHTML;
+
+  // Summary cards
+  const burn=u.burnRate||{};
+  document.getElementById('usage-cards').innerHTML=`
+    <div class="c c-accent"><div class="c-label">Total Spend</div><div class="c-val">$${u.totals.cost.toFixed(2)}</div></div>
+    <div class="c c-green"><div class="c-label">Today</div><div class="c-val">$${(u.today?.cost||0).toFixed(2)}</div><div class="c-sub">${u.today?.calls||0} calls · ${u.today?.hoursActive||0}h active</div></div>
+    <div class="c c-amber"><div class="c-label">Daily Burn (7d avg)</div><div class="c-val">$${(burn.daily||0).toFixed(2)}</div><div class="c-sub">~$${(burn.projected30d||0).toFixed(0)}/mo projected</div></div>
+    <div class="c"><div class="c-label">Total Calls</div><div class="c-val">${fN(u.totals.calls)}</div></div>
+    <div class="c"><div class="c-label">Sessions</div><div class="c-val">${u.sessionCount||0}</div></div>
+    <div class="c"><div class="c-label">Output Tokens</div><div class="c-val">${fN(u.totals.output)}</div></div>
+  `;
+
+  // Charts
+  const daily=u.daily||[];
+  const models=u.models||{};
+  const maxD=Math.max(0.01,...daily.map(d=>d.cost));
+  const maxM=Math.max(1,...Object.values(models).map(m=>m.calls));
+  const topS=u.topSessions||[];
+
+  document.getElementById('usage-detail').innerHTML=`
+    <div class="ucard"><h3>Daily Cost (14d)</h3>
+      <div class="mini-chart">${daily.map(d=>{
+        const h=Math.max(2,d.cost/maxD*50);
+        const col=d.date===new Date().toISOString().slice(0,10)?'var(--accent)':'var(--cyan)';
+        return`<div class="mini-bar" style="height:${h}px;background:${col}"><div class="tip">${d.date.slice(5)} · $${d.cost.toFixed(2)} · ${d.calls} calls</div></div>`;
+      }).join('')}</div>
+      ${daily.length===0?'<p style="color:var(--text-dim);font-size:12px;margin-top:10px">No daily data yet</p>':''}
+    </div>
+    <div class="ucard"><h3>Model Breakdown</h3>
+      <div class="bar-chart">${Object.entries(models).sort((a,b)=>b[1].calls-a[1].calls).map(([m,d],i)=>`
+        <div class="bar-r"><span class="bar-l">${m}</span><div class="bar-t"><div class="bar-f" style="width:${d.calls/maxM*100}%;background:${colors[i%8]}">${d.calls}</div></div></div>
+      `).join('')}${Object.keys(models).length===0?'<p style="color:var(--text-dim);font-size:12px">No data</p>':''}</div>
+    </div>
+    <div class="ucard"><h3>Cost by Model</h3>
+      <div class="bar-chart">${Object.entries(models).filter(([,d])=>d.cost>0).sort((a,b)=>b[1].cost-a[1].cost).map(([m,d],i)=>{
+        const mx=Math.max(0.01,...Object.values(models).map(x=>x.cost));
+        return`<div class="bar-r"><span class="bar-l">${m}</span><div class="bar-t"><div class="bar-f" style="width:${d.cost/mx*100}%;background:${colors[i%8]}">$${d.cost.toFixed(2)}</div></div></div>`;
+      }).join('')}${Object.values(models).every(d=>d.cost===0)?'<p style="color:var(--text-dim);font-size:12px">All free tier</p>':''}</div>
+    </div>
+    <div class="ucard"><h3>Top Sessions by Cost</h3>
+      <div class="bar-chart">${topS.filter(s=>s.cost>0).slice(0,8).map((s,i)=>{
+        const mx=Math.max(0.01,...topS.map(x=>x.cost));
+        return`<div class="bar-r"><span class="bar-l" title="${s.id}">${s.id}</span><div class="bar-t"><div class="bar-f" style="width:${s.cost/mx*100}%;background:${colors[i%8]}">$${s.cost.toFixed(2)} · ${s.calls}c</div></div></div>`;
+      }).join('')}${topS.length===0?'<p style="color:var(--text-dim);font-size:12px">No data</p>':''}</div>
+    </div>
+  `;
+}
+
+// Agents
+function updAgents(){
+  const el=document.getElementById('agents-c');
+  if(!sessions.length){el.innerHTML='<div class="empty"><div class="ico">🤖</div><p>Waiting for session data...</p></div>';return}
+  el.innerHTML='<div class="agents-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">'+sessions.map(s=>{
+    const a=s.active||(s.lastActivity&&(Date.now()-new Date(s.lastActivity).getTime())<300000);
+    return`<div class="c"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-weight:600;font-size:13px">${esc(s.key||'?')}</span><span class="plan-badge" style="background:${a?'var(--green-dim);color:var(--green)':'var(--amber-dim);color:var(--amber)'}">${a?'Active':'Idle'}</span></div><div style="font-size:11px;color:var(--text-dim);font-family:var(--mono)">${s.model?'Model: '+s.model+'<br>':''}${s.channel?'Channel: '+s.channel:''}</div></div>`;
+  }).join('')+'</div>';
+}
+
+// Crons
+function updCrons(){
+  const el=document.getElementById('crons-c');
+  if(!cronJobs.length){el.innerHTML='<div class="empty"><div class="ico">⏰</div><p>Waiting for cron data...</p></div>';return}
+  el.innerHTML=`<div class="c" style="overflow-x:auto"><table class="ctbl"><thead><tr><th></th><th>Name</th><th>Schedule</th><th>Last Run</th><th>Model</th></tr></thead><tbody>${cronJobs.map(j=>`<tr><td><span class="cdot ${j.enabled?'on':'off'}"></span></td><td>${esc(j.name||j.id?.slice(0,8)||'?')}</td><td>${esc(fmtSched(j.schedule))}</td><td>${j.lastRun?new Date(j.lastRun).toLocaleString():'—'}</td><td>${esc((j.model||'').split('/').pop()||'—')}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function fmtSched(s){if(!s)return'—';if(s.kind==='every')return'Every '+Math.round((s.everyMs||0)/60000)+'m';if(s.kind==='cron')return s.expr||'?';if(s.kind==='at')return new Date(s.at).toLocaleString();return JSON.stringify(s).slice(0,30)}
+
+// System
+function updSys(){
+  const s=stats._sys;if(!s){document.getElementById('sys-cards').innerHTML='<div class="c"><div class="c-label">Waiting...</div></div>';return}
+  const mp=((1-s.memFree/s.memTotal)*100).toFixed(1),mg=((s.memTotal-s.memFree)/1073741824).toFixed(1),mt=(s.memTotal/1073741824).toFixed(1);
+  document.getElementById('sys-cards').innerHTML=`
+    <div class="c"><div class="c-label">CPU (1m)</div><div class="c-val">${s.load[0].toFixed(2)}</div></div>
+    <div class="c"><div class="c-label">Memory</div><div class="c-val">${mp}%</div><div class="c-sub">${mg}/${mt} GB</div></div>
+    <div class="c"><div class="c-label">Uptime</div><div class="c-val">${fD(s.uptime*1000)}</div></div>
+    <div class="c"><div class="c-label">Load 5/15m</div><div class="c-val" style="font-size:16px">${s.load[1].toFixed(2)} / ${s.load[2].toFixed(2)}</div></div>`;
+  const cc=s.load[0]>4?'var(--red)':s.load[0]>2?'var(--amber)':'var(--green)';
+  const mc=mp>90?'var(--red)':mp>70?'var(--amber)':'var(--green)';
+  document.getElementById('sys-meters').innerHTML=`
+    <div class="meter"><div class="meter-h"><span>CPU</span><span>${s.load[0].toFixed(2)}</span></div><div class="meter-t"><div class="meter-f" style="width:${Math.min(100,s.load[0]*25)}%;background:${cc}"></div></div></div>
+    <div class="meter"><div class="meter-h"><span>Memory</span><span>${mp}%</span></div><div class="meter-t"><div class="meter-f" style="width:${mp}%;background:${mc}"></div></div></div>`;
+}
+
+function updateAll(){updLive();updUsage();updAgents();updCrons();updSys()}
+setInterval(updateAll,5000);
+
+function fN(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n)}
+function fD(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60);if(h>24)return Math.floor(h/24)+'d '+h%24+'h';if(h>0)return h+'h '+m+'m';if(m>0)return m+'m';return s+'s'}
+const t0=Date.now();setInterval(()=>document.getElementById('uptime').textContent=fD(Date.now()-t0),1000);
+
+connect();
+addEv('system','Dashboard initialized',Date.now());
+</script>
+</body>
+</html>

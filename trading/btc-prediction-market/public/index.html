@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTC Prediction Market</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --card: #141414;
+      --border: #2a2a2a;
+      --muted: #9aa0a6;
+      --text: #f3f3f3;
+      --btc: #F7931A;
+      --green: #00c853;
+      --red: #ff1744;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 500px at -20% -20%, rgba(247,147,26,.12), transparent 40%),
+        radial-gradient(800px 400px at 120% 0%, rgba(0,200,83,.08), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 14px;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,0) 25%), var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(4px);
+    }
+
+    .section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section:last-child { border-bottom: 0; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      font-weight: 800;
+      letter-spacing: .3px;
+    }
+
+    .title .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--btc);
+      box-shadow: 0 0 20px rgba(247,147,26,.5);
+    }
+
+    .balance {
+      font-weight: 700;
+      font-size: 1rem;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .balance span { font-weight: 800; }
+    .balance.positive span { color: var(--green); }
+    .balance.negative span { color: var(--red); }
+    .balance.neutral span { color: #ddd; }
+
+    .market-top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .btc-price {
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(0,200,83,.35);
+      color: #bcffcf;
+      background: rgba(0,200,83,.1);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: .82rem;
+      letter-spacing: .3px;
+    }
+
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.2s infinite;
+      box-shadow: 0 0 14px rgba(0,200,83,.65);
+    }
+
+    .window {
+      text-align: center;
+      color: var(--muted);
+      font-size: .95rem;
+      margin: 8px 0 4px;
+    }
+
+    .countdown-wrap {
+      margin: 10px 0 6px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .countdown {
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #ffffff;
+      min-width: 82px;
+      display: inline-block;
+      text-align: left;
+    }
+
+    .countdown.warn { color: var(--btc); }
+    .countdown.danger {
+      color: var(--red);
+      animation: dangerPulse .85s infinite;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .side-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,.01);
+    }
+
+    .side-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .up .side-title { color: #9ff4b8; }
+    .down .side-title { color: #ff9fb2; }
+
+    .price-cents {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .bar-wrap {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #1f1f1f;
+      border: 1px solid #2f2f2f;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .bar {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .45s ease;
+    }
+
+    .up .bar { background: linear-gradient(90deg, #008f3a, var(--green)); }
+    .down .bar { background: linear-gradient(90deg, #b0002f, var(--red)); }
+
+    .ret {
+      font-size: .95rem;
+      font-weight: 600;
+      color: #d7d7d7;
+    }
+
+    .bet-controls {
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(0,0,0,.25);
+    }
+
+    .label {
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .amount-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .amount-input {
+      flex: 1;
+      min-width: 180px;
+      background: #0f0f0f;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .amount-input:focus {
+      border-color: var(--btc);
+      box-shadow: 0 0 0 2px rgba(247,147,26,.15);
+    }
+
+    .quick {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .chip, .btn {
+      border: 1px solid var(--border);
+      background: #131313;
+      color: #eee;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease, opacity .12s ease;
+    }
+
+    .chip:hover, .btn:hover { transform: translateY(-1px); border-color: #3b3b3b; }
+    .chip:active, .btn:active { transform: translateY(0); }
+
+    .actions {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn.up {
+      background: linear-gradient(180deg, rgba(0,200,83,.22), rgba(0,200,83,.08));
+      border-color: rgba(0,200,83,.4);
+      color: #d4ffe2;
+    }
+
+    .btn.down {
+      background: linear-gradient(180deg, rgba(255,23,68,.22), rgba(255,23,68,.08));
+      border-color: rgba(255,23,68,.4);
+      color: #ffd8df;
+    }
+
+    .btn.disabled, .btn:disabled, .chip:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .closed-note {
+      margin-top: 10px;
+      font-size: .9rem;
+      color: #ccc;
+      background: rgba(255,255,255,.03);
+      border: 1px dashed #454545;
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .bet-status {
+      margin-top: 14px;
+      display: none;
+      border: 1px solid rgba(247,147,26,.35);
+      background: rgba(247,147,26,.08);
+      color: #ffe6c9;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 700;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 10px;
+      text-align: center;
+    }
+
+    .stat {
+      background: rgba(255,255,255,.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 8px;
+    }
+
+    .stat .k { color: var(--muted); font-size: .78rem; margin-bottom: 4px; }
+    .stat .v { font-size: .98rem; font-weight: 800; }
+
+    .reset-row {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .btn.reset {
+      color: #ffd6d6;
+      border-color: #5a2e2e;
+      background: linear-gradient(180deg, rgba(255,23,68,.16), rgba(255,23,68,.06));
+    }
+
+    .history-title { font-weight: 800; margin-bottom: 10px; }
+
+    .history-list {
+      display: grid;
+      gap: 8px;
+      max-height: 270px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .history-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255,255,255,.01);
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 1.5fr .9fr .9fr 1fr;
+      gap: 8px;
+      font-size: .9rem;
+      align-items: center;
+    }
+
+    .history-dir.up { color: #9ff4b8; }
+    .history-dir.down { color: #ff9fb2; }
+    .history-result.won { color: var(--green); font-weight: 700; }
+    .history-result.lost { color: var(--red); font-weight: 700; }
+    .history-empty { color: var(--muted); font-size: .92rem; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .2s ease;
+      backdrop-filter: blur(2px);
+    }
+
+    .overlay.show { opacity: 1; }
+
+    .overlay-inner {
+      font-size: clamp(1.8rem, 8vw, 4rem);
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-align: center;
+      text-shadow: 0 6px 20px rgba(0,0,0,.5);
+      padding: 18px 22px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.35);
+    }
+
+    .overlay.win { background: rgba(0, 200, 83, .3); }
+    .overlay.lose { background: rgba(255, 23, 68, .3); }
+
+    .tiny {
+      color: var(--muted);
+      font-size: .78rem;
+      margin-top: 8px;
+      text-align: right;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(.95); opacity: .8; }
+      60% { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(.95); opacity: .8; }
+    }
+
+    @keyframes dangerPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-width: 860px) {
+      .stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .history-item { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      body { padding: 12px; }
+      .section { padding: 14px; }
+      .cards { grid-template-columns: 1fr; }
+      .actions { grid-template-columns: 1fr; }
+      .header { align-items: stretch; }
+      .balance { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="panel">
+      <section class="section header">
+        <div class="title"><span class="dot"></span> BTC PREDICTION MARKET</div>
+        <div id="balanceCard" class="balance neutral">Balance: <span id="balanceValue">$1,000.00</span></div>
+      </section>
+
+      <section class="section">
+        <div class="market-top">
+          <div class="btc-price">₿ Bitcoin: <span id="btcPrice">$0.00</span></div>
+          <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+        </div>
+        <div id="windowLabel" class="window">Window: --</div>
+        <div class="countdown-wrap">
+          <span>⏱️ Time Remaining:</span>
+          <span id="countdown" class="countdown">--:--</span>
+        </div>
+
+        <div class="cards">
+          <div class="side-card up">
+            <div class="side-title">▲ UP</div>
+            <div class="price-cents" id="upCents">--¢</div>
+            <div class="bar-wrap"><div id="upBar" class="bar" style="width:0%"></div></div>
+            <div class="ret" id="upRet">+0.0% if win</div>
+          </div>
+          <div class="side-card down">
+            <div class="side-title">▼ DOWN</div>
+            <div class="price-cents" id="downCents">--¢</div>
+            <div class="bar-wrap"><div id="downBar" class="bar" style="width:0%"></div></div>
+            <div class="ret" id="downRet">+0.0% if win</div>
+          </div>
+        </div>
+
+        <div class="bet-controls" id="betControls">
+          <label class="label" for="amountInput">Bet Amount</label>
+          <div class="amount-row">
+            <input id="amountInput" class="amount-input" type="number" min="1" step="0.01" value="50.00" />
+          </div>
+          <div class="quick">
+            <button class="chip" data-amt="10">$10</button>
+            <button class="chip" data-amt="25">$25</button>
+            <button class="chip" data-amt="50">$50</button>
+            <button class="chip" data-amt="100">$100</button>
+            <button class="chip" data-amt="all">ALL IN</button>
+          </div>
+          <div class="actions" id="actionButtons">
+            <button id="betUpBtn" class="btn up">🟢 BET UP ▲</button>
+            <button id="betDownBtn" class="btn down">🔴 BET DOWN ▼</button>
+          </div>
+          <div id="closedNote" class="closed-note">Betting closed — window ending</div>
+          <div id="betStatus" class="bet-status">Bet locked</div>
+        </div>
+        <div class="tiny" id="syncText">syncing…</div>
+      </section>
+
+      <section class="section">
+        <div class="stats-grid">
+          <div class="stat"><div class="k">Wins</div><div id="wins" class="v">0</div></div>
+          <div class="stat"><div class="k">Losses</div><div id="losses" class="v">0</div></div>
+          <div class="stat"><div class="k">Win Rate</div><div id="winRate" class="v">0.0%</div></div>
+          <div class="stat"><div class="k">Streak</div><div id="streak" class="v">0</div></div>
+          <div class="stat"><div class="k">P/L</div><div id="pl" class="v">$0.00</div></div>
+        </div>
+      </section>
+
+      <section class="section reset-row">
+        <button id="resetBtn" class="btn reset">Reset Balance</button>
+      </section>
+
+      <section class="section">
+        <div class="history-title">Recent Bets</div>
+        <div id="historyList" class="history-list">
+          <div class="history-empty">No bets yet.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="flashOverlay" class="overlay">
+    <div id="flashText" class="overlay-inner"></div>
+  </div>
+
+  <script>
+    const state = {
+      market: null,
+      stats: null,
+      activeBet: null,
+      history: [],
+      serverRemainingAtSync: 0,
+      clientSyncTs: 0,
+      lastResolvedId: null,
+      syncing: true,
+    };
+
+    const el = {
+      balanceCard: document.getElementById('balanceCard'),
+      balanceValue: document.getElementById('balanceValue'),
+      btcPrice: document.getElementById('btcPrice'),
+      windowLabel: document.getElementById('windowLabel'),
+      countdown: document.getElementById('countdown'),
+      upCents: document.getElementById('upCents'),
+      downCents: document.getElementById('downCents'),
+      upBar: document.getElementById('upBar'),
+      downBar: document.getElementById('downBar'),
+      upRet: document.getElementById('upRet'),
+      downRet: document.getElementById('downRet'),
+      amountInput: document.getElementById('amountInput'),
+      actionButtons: document.getElementById('actionButtons'),
+      betUpBtn: document.getElementById('betUpBtn'),
+      betDownBtn: document.getElementById('betDownBtn'),
+      closedNote: document.getElementById('closedNote'),
+      betStatus: document.getElementById('betStatus'),
+      wins: document.getElementById('wins'),
+      losses: document.getElementById('losses'),
+      winRate: document.getElementById('winRate'),
+      streak: document.getElementById('streak'),
+      pl: document.getElementById('pl'),
+      historyList: document.getElementById('historyList'),
+      resetBtn: document.getElementById('resetBtn'),
+      flashOverlay: document.getElementById('flashOverlay'),
+      flashText: document.getElementById('flashText'),
+      syncText: document.getElementById('syncText'),
+    };
+
+    const fmtMoney = (n = 0) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n) || 0);
+    const fmtNum2 = (n = 0) => (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtPct = (n = 0) => `${n >= 0 ? '+' : ''}${(Number(n) || 0).toFixed(1)}% if win`;
+
+    function calcReturnFromPrice(price) {
+      const p = Number(price);
+      if (!p || p <= 0) return 0;
+      return ((1 / p) - 1) * 100;
+    }
+
+    function formatCountdown(sec) {
+      const s = Math.max(0, Math.floor(sec));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${m}:${String(r).padStart(2, '0')}`;
+    }
+
+    function parseDirection(direction) {
+      const d = (direction || '').toString().toLowerCase();
+      return d.startsWith('u') ? 'Up' : d.startsWith('d') ? 'Down' : 'Unknown';
+    }
+
+    function deriveWindowLabel(market) {
+      if (!market) return 'Window: --';
+      const tz = 'America/New_York';
+      const opts = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: tz };
+
+      if (market.windowTs) {
+        const start = new Date(market.windowTs);
+        const end = new Date(start.getTime() + 5 * 60 * 1000);
+        return `Window: ${start.toLocaleString('en-US', opts)} - ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: tz })} ET`;
+      }
+
+      if (market.endsAt) {
+        const end = new Date(market.endsAt);
+        const start = new Date(end.getTime() - 5 * 60 * 1000);
+        return `Window: ${start.toLocaleString('en-US', opts)} - ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: tz })} ET`;
+      }
+
+      return `Window: ${market.question || '--'}`;
+    }
+
+    function renderMarket() {
+      const m = state.market;
+      if (!m) return;
+
+      el.btcPrice.textContent = fmtMoney(m.btcPrice);
+      el.windowLabel.textContent = deriveWindowLabel(m);
+
+      const upPrice = Math.max(0, Math.min(1, Number(m.upPrice) || 0));
+      const downPrice = Math.max(0, Math.min(1, Number(m.downPrice) || 0));
+
+      el.upCents.textContent = `${(upPrice * 100).toFixed(1)}¢`;
+      el.downCents.textContent = `${(downPrice * 100).toFixed(1)}¢`;
+      el.upBar.style.width = `${(upPrice * 100).toFixed(1)}%`;
+      el.downBar.style.width = `${(downPrice * 100).toFixed(1)}%`;
+
+      const upRet = Number.isFinite(Number(m.upReturn)) ? Number(m.upReturn) : calcReturnFromPrice(upPrice);
+      const downRet = Number.isFinite(Number(m.downReturn)) ? Number(m.downReturn) : calcReturnFromPrice(downPrice);
+      el.upRet.textContent = fmtPct(upRet);
+      el.downRet.textContent = fmtPct(downRet);
+    }
+
+    function renderStats() {
+      const s = state.stats || {};
+      const balance = Number(s.balance ?? 1000);
+      const wins = Number(s.wins ?? 0);
+      const losses = Number(s.losses ?? 0);
+      const total = wins + losses;
+      const winRate = total ? (wins / total) * 100 : 0;
+
+      el.balanceValue.textContent = fmtMoney(balance);
+      el.balanceCard.classList.remove('positive', 'negative', 'neutral');
+      if (balance > 1000) el.balanceCard.classList.add('positive');
+      else if (balance < 1000) el.balanceCard.classList.add('negative');
+      else el.balanceCard.classList.add('neutral');
+
+      el.wins.textContent = wins;
+      el.losses.textContent = losses;
+      el.winRate.textContent = `${winRate.toFixed(1)}%`;
+      el.streak.textContent = `${Number(s.currentStreak || 0)}${s.currentStreak > 1 ? ' 🔥' : ''}`;
+      const pl = Number(s.totalProfitLoss || 0);
+      el.pl.textContent = `${pl >= 0 ? '+' : '-'}${fmtMoney(Math.abs(pl))}`;
+      el.pl.style.color = pl >= 0 ? 'var(--green)' : 'var(--red)';
+    }
+
+    function getRemainingSeconds() {
+      const elapsed = (Date.now() - state.clientSyncTs) / 1000;
+      return Math.max(0, (state.serverRemainingAtSync || 0) - elapsed);
+    }
+
+    function renderCountdown() {
+      const sec = getRemainingSeconds();
+      el.countdown.textContent = formatCountdown(sec);
+      el.countdown.classList.remove('warn', 'danger');
+      if (sec < 30) el.countdown.classList.add('danger');
+      else if (sec < 60) el.countdown.classList.add('warn');
+
+      const closed = sec < 30;
+      const hasActive = !!state.activeBet;
+
+      if (hasActive) {
+        el.actionButtons.style.display = 'none';
+        el.closedNote.style.display = 'none';
+        el.betStatus.style.display = 'block';
+      } else {
+        el.actionButtons.style.display = 'grid';
+        el.betStatus.style.display = 'none';
+        el.closedNote.style.display = closed ? 'block' : 'none';
+      }
+
+      const disableBet = closed || hasActive;
+      el.betUpBtn.disabled = disableBet;
+      el.betDownBtn.disabled = disableBet;
+      el.betUpBtn.classList.toggle('disabled', disableBet);
+      el.betDownBtn.classList.toggle('disabled', disableBet);
+    }
+
+    function renderActiveBet() {
+      const b = state.activeBet;
+      if (!b) {
+        el.betStatus.style.display = 'none';
+        return;
+      }
+      const dir = parseDirection(b.direction);
+      const amt = fmtMoney(b.amount || 0);
+      el.betStatus.innerHTML = `Bet locked: <strong>${amt}</strong> on <strong>${dir === 'Up' ? 'UP ▲' : 'DOWN ▼'}</strong> <span style="opacity:.8">(${(b.status || 'pending').toUpperCase()})</span>`;
+      el.betStatus.style.display = 'block';
+    }
+
+    function formatWindowForHistory(item) {
+      if (item.windowLabel) return item.windowLabel;
+      const source = item.windowTs || item.placedAt || item.createdAt || item.updatedAt;
+      if (!source) return '--';
+      const end = new Date(source);
+      const start = new Date(end.getTime() - 5 * 60 * 1000);
+      const fmt = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' };
+      return `${start.toLocaleTimeString('en-US', fmt)}-${end.toLocaleTimeString('en-US', fmt)}`;
+    }
+
+    function renderHistory() {
+      const list = Array.isArray(state.history) ? state.history : [];
+      if (!list.length) {
+        el.historyList.innerHTML = '<div class="history-empty">No bets yet.</div>';
+        return;
+      }
+
+      el.historyList.innerHTML = list.slice(0, 30).map((item) => {
+        const dir = parseDirection(item.direction);
+        const isUp = dir === 'Up';
+        const status = (item.status || '').toLowerCase();
+        const pnl = Number(item.profitLoss ?? item.pnl ?? 0);
+        const pnlText = `${pnl >= 0 ? '+' : '-'}${fmtMoney(Math.abs(pnl))}`;
+        const statusLabel = status === 'won' ? '✅ Won' : status === 'lost' ? '❌ Lost' : '⏳ Pending';
+
+        return `
+          <div class="history-item">
+            <div>${formatWindowForHistory(item)}</div>
+            <div class="history-dir ${isUp ? 'up' : 'down'}">${isUp ? '▲UP' : '▼DOWN'}</div>
+            <div>${fmtMoney(item.amount || 0)}</div>
+            <div class="history-result ${status === 'won' ? 'won' : status === 'lost' ? 'lost' : ''}">${statusLabel} ${status === 'pending' ? '' : pnlText}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showFlash(type, amount) {
+      el.flashOverlay.classList.remove('win', 'lose', 'show');
+      el.flashOverlay.classList.add(type === 'win' ? 'win' : 'lose');
+      el.flashText.textContent = type === 'win'
+        ? `🎉 YOU WIN! +${fmtMoney(Math.abs(amount || 0))}`
+        : `💀 YOU LOSE -${fmtMoney(Math.abs(amount || 0))}`;
+
+      requestAnimationFrame(() => {
+        el.flashOverlay.classList.add('show');
+        setTimeout(() => el.flashOverlay.classList.remove('show'), 2000);
+      });
+    }
+
+    function detectResolution(prevActive, nextActive) {
+      const prev = prevActive;
+      if (!prev) return;
+
+      const prevStatus = (prev.status || '').toLowerCase();
+      if (prevStatus !== 'pending') return;
+
+      let resolved = null;
+      const nextStatus = (nextActive?.status || '').toLowerCase();
+      if (nextActive && (nextStatus === 'won' || nextStatus === 'lost')) {
+        resolved = nextActive;
+      } else if (!nextActive && Array.isArray(state.history) && state.history.length) {
+        const candidate = state.history.find(h => {
+          if (!h) return false;
+          if ((h.status || '').toLowerCase() === 'pending') return false;
+          if (prev.id && h.id) return h.id === prev.id;
+          return (h.direction === prev.direction) && Number(h.amount) === Number(prev.amount);
+        });
+        if (candidate) resolved = candidate;
+      }
+
+      if (!resolved) return;
+      const id = resolved.id || `${resolved.direction}-${resolved.amount}-${resolved.updatedAt || resolved.createdAt || Date.now()}`;
+      if (state.lastResolvedId === id) return;
+      state.lastResolvedId = id;
+
+      const status = (resolved.status || '').toLowerCase();
+      const amount = Number(resolved.profitLoss ?? resolved.pnl ?? resolved.payout ?? resolved.amount ?? 0);
+      if (status === 'won') showFlash('win', amount);
+      if (status === 'lost') showFlash('lose', amount);
+    }
+
+    async function getJson(url, opts) {
+      const res = await fetch(url, opts);
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      return res.json();
+    }
+
+    async function pollMarket() {
+      try {
+        const data = await getJson('/api/market');
+        state.market = data;
+        state.serverRemainingAtSync = Number(data.secondsRemaining || 0);
+        state.clientSyncTs = Date.now();
+        renderMarket();
+        renderCountdown();
+        state.syncing = false;
+      } catch (err) {
+        state.syncing = true;
+      }
+      updateSyncText();
+    }
+
+    async function pollStatsAndActive() {
+      try {
+        const [stats, active] = await Promise.all([
+          getJson('/api/stats'),
+          getJson('/api/active'),
+        ]);
+
+        const prevActive = state.activeBet;
+        state.stats = stats || {};
+        state.activeBet = active || null;
+
+        renderStats();
+        renderActiveBet();
+        renderCountdown();
+        detectResolution(prevActive, state.activeBet);
+      } catch (err) {
+        // noop
+      }
+    }
+
+    async function pollHistory() {
+      try {
+        const history = await getJson('/api/history');
+        state.history = Array.isArray(history) ? history : [];
+        renderHistory();
+      } catch (err) {
+        // noop
+      }
+    }
+
+    function updateSyncText() {
+      el.syncText.textContent = state.syncing
+        ? 'reconnecting…'
+        : `last sync ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
+    }
+
+    async function placeBet(direction) {
+      const amount = Number(el.amountInput.value);
+      if (!amount || amount <= 0) return alert('Enter a valid amount');
+
+      try {
+        el.betUpBtn.disabled = true;
+        el.betDownBtn.disabled = true;
+
+        await getJson('/api/bet', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ direction, amount }),
+        });
+
+        await Promise.all([pollStatsAndActive(), pollHistory()]);
+      } catch (err) {
+        alert('Bet failed. Please try again.');
+      } finally {
+        renderCountdown();
+      }
+    }
+
+    async function resetBalance() {
+      if (!confirm('Reset balance to starting amount?')) return;
+      try {
+        await getJson('/api/reset', { method: 'POST' });
+        await Promise.all([pollStatsAndActive(), pollHistory(), pollMarket()]);
+      } catch (err) {
+        alert('Reset failed.');
+      }
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('.chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const v = chip.dataset.amt;
+          if (v === 'all') {
+            const bal = Number(state.stats?.balance || 0);
+            el.amountInput.value = bal > 0 ? bal.toFixed(2) : '0.00';
+          } else {
+            el.amountInput.value = Number(v).toFixed(2);
+          }
+        });
+      });
+
+      el.betUpBtn.addEventListener('click', () => placeBet('Up'));
+      el.betDownBtn.addEventListener('click', () => placeBet('Down'));
+      el.resetBtn.addEventListener('click', resetBalance);
+    }
+
+    function startCountdownLoop() {
+      setInterval(() => renderCountdown(), 250);
+    }
+
+    async function init() {
+      bindEvents();
+      await Promise.all([pollMarket(), pollStatsAndActive(), pollHistory()]);
+      setInterval(pollMarket, 5000);
+      setInterval(pollStatsAndActive, 5000);
+      setInterval(pollHistory, 10000);
+      startCountdownLoop();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+[Unit]
+Description=WolfeUp Reply Orchestrator
+After=network.target
+
+[Service]
+Type=simple
+User=tyler
+WorkingDirectory=/home/tyler/.openclaw/workspace/reply-orchestrator
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

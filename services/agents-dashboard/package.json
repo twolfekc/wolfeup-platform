@@ -1,0 +1,12 @@
+{
+  "name": "loup-agent-dashboard",
+  "version": "1.0.0",
+  "description": "Live agent dashboard for Loup - real-time AI agent monitoring",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}

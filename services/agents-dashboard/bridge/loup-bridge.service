@@ -1,0 +1,19 @@
+[Unit]
+Description=Loup Event Bridge - streams OpenClaw events to dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=tyler
+Environment=DASHBOARD_URL=http://localhost
+Environment=DASHBOARD_HOST=agents.example.com
+Environment=SESSIONS_DIR=/home/tyler/.openclaw/agents/main/sessions
+Environment=GATEWAY_URL=http://127.0.0.1:18789
+# GATEWAY_TOKEN must be set in environment file
+EnvironmentFile=-/etc/default/loup-bridge
+ExecStart=/usr/bin/node /home/tyler/.openclaw/workspace/agents-dashboard/bridge/event-bridge.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

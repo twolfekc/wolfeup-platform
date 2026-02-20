@@ -1,0 +1,89 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@modelcontextprotocol/server-filesystem/dist/index.js", "/home/user", "/tmp"],
+      "description": "Read/write/search files on filesystem"
+    },
+    "memory": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@modelcontextprotocol/server-memory/dist/index.js"],
+      "description": "Persistent key-value memory store across sessions"
+    },
+    "sequential-thinking": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"],
+      "description": "Structured step-by-step reasoning tool"
+    },
+    "brave-search": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@modelcontextprotocol/server-brave-search/dist/index.js"],
+      "env": {
+        "BRAVE_API_KEY": "your_brave_api_key_here"
+      },
+      "description": "Web search via Brave API"
+    },
+    "github": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@modelcontextprotocol/server-github/dist/index.js"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your_github_pat_here"
+      },
+      "description": "GitHub repos, issues, PRs, code search via API"
+    },
+    "playwright": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@playwright/mcp/cli.js", "--cdp-endpoint", "http://localhost:CDP_PORT"],
+      "description": "Browser automation via existing Chrome CDP session"
+    },
+    "puppeteer": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@modelcontextprotocol/server-puppeteer/dist/index.js"],
+      "description": "Headless browser automation with Puppeteer"
+    },
+    "desktop-commander": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@wonderwhy-er/desktop-commander/dist/index.js"],
+      "description": "Terminal commands, file ops, process management"
+    },
+    "xcodebuild": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/xcodebuildmcp/dist/index.js"],
+      "description": "Build, run, test Xcode projects and iOS Simulator"
+    },
+    "ios-simulator": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/ios-simulator-mcp/dist/index.js"],
+      "description": "Control iOS Simulator UI, screenshots, accessibility hierarchy"
+    },
+    "mcp-commands": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/mcp-server-commands/dist/index.js"],
+      "description": "Run shell commands as MCP tools"
+    },
+    "obsidian": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/mcp-obsidian/dist/index.js"],
+      "env": {
+        "OBSIDIAN_API_KEY": "",
+        "OBSIDIAN_HOST": "http://localhost:27123"
+      },
+      "description": "Read/write Obsidian vault notes (requires Local REST API plugin)"
+    },
+    "context7": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@upstash/context7-mcp/dist/index.js"],
+      "description": "Up-to-date library docs and code examples via Context7"
+    },
+    "gdrive": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@modelcontextprotocol/server-gdrive/dist/index.js"],
+      "description": "Google Drive file access (requires OAuth setup)"
+    },
+    "everything": {
+      "command": "/usr/local/bin/node",
+      "args": ["./node_modules/@modelcontextprotocol/server-everything/dist/index.js"],
+      "description": "Demo server exercising all MCP protocol features - useful for testing"
+    }
+  }
+}

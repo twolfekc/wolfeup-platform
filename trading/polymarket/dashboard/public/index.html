@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loup Polymarket Dashboard — Version Ladder</title>
+  <style>
+    :root{--bg:#0d1117;--panel:#111827;--panel2:#161b22;--line:#263041;--text:#e5e7eb;--muted:#9ca3af;--gold:#f59e0b;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#8b5cf6;--card:#0f1623}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .app{max-width:1500px;margin:0 auto;padding:14px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .brand{font-weight:800;letter-spacing:.5px}.status{font-size:12px;color:var(--muted)}.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--red)}.dot.ok{background:var(--green)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tab{padding:8px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;cursor:pointer;font-weight:600;color:#d1d5db}.tab.active{background:linear-gradient(180deg,#1f2937,#111827);border-color:#3f4a5e;color:#fff}
+    .tabpane{display:none}.tabpane.active{display:block}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.stat{flex:1 1 160px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}.k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.v{font-size:18px;font-weight:800}
+    .layout{display:flex;gap:12px;flex-wrap:wrap}.left{flex:2 1 860px;display:flex;flex-direction:column;gap:12px}.right{flex:1 1 330px;display:flex;flex-direction:column;gap:12px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+    .panel h3{margin:0 0 10px 0;font-size:14px;letter-spacing:.6px;text-transform:uppercase;color:#f3f4f6}
+    .version-ladder{border:2px solid rgba(245,158,11,.6);box-shadow:0 0 0 1px rgba(245,158,11,.15),0 20px 50px rgba(0,0,0,.35);background:radial-gradient(1200px 500px at 20% -20%,rgba(245,158,11,.12),transparent 30%),var(--card)}
+    .vl-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.badge-gold{color:#111;background:var(--gold);padding:4px 8px;border-radius:999px;font-weight:800;font-size:11px}
+    .vrow{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;background:#101725;cursor:pointer}.vrow.best{border-color:rgba(245,158,11,.8);box-shadow:inset 0 0 0 1px rgba(245,158,11,.2)}
+    .vmain{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.name{font-weight:700;min-width:190px}.money{font-weight:800}.pos{color:var(--green)}.neg{color:var(--red)}.muted{color:var(--muted)}
+    .trend{font-weight:700}.expand{display:none;border-top:1px dashed var(--line);margin-top:8px;padding-top:8px}.vrow.open .expand{display:block}
+    .mini-eq{width:100%;height:70px;background:#0d1420;border:1px solid var(--line);border-radius:8px}
+    .signal-card{border:1px solid var(--line);border-radius:10px;padding:10px;background:#101725;margin-bottom:8px}.sig-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .state{padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}.watching{background:#1e293b;color:#93c5fd}.betting{background:#052e16;color:#86efac}.blackout{background:#3f1d1d;color:#fecaca}
+    .meter{position:relative;height:18px;border:1px solid var(--line);border-radius:999px;background:#0f172a;overflow:hidden;margin:5px 0}.meter::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:#64748b}.fill{position:absolute;top:0;bottom:0;left:50%;width:0;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);transition:all .45s ease}
+    table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left}th{cursor:pointer;color:#d1d5db;background:#111827;position:sticky;top:0}
+    .row-expand{display:none;background:#0f172a}.open + .row-expand{display:table-row}
+    .activity{max-height:420px;overflow:auto}.act{padding:8px;border-bottom:1px solid var(--line);font-size:13px}.act time{color:var(--muted);font-size:11px;display:block}
+    .chart{width:100%;height:260px;background:#0d1420;border:1px solid var(--line);border-radius:10px}
+    .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+    .family{background:#101725;border:1px solid var(--line);border-radius:12px;padding:10px}
+    .toggle{appearance:none;width:42px;height:22px;background:#334155;border-radius:999px;position:relative;cursor:pointer;vertical-align:middle}.toggle:checked{background:#16a34a}.toggle::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}.toggle:checked::after{left:23px}
+    .summary{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:8px 10px;background:#111827;border:1px solid var(--line);border-radius:10px;font-size:12px}
+    .danger{background:#7f1d1d;border:1px solid #ef4444;color:#fff;padding:12px 14px;border-radius:10px;font-weight:800;cursor:pointer}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.filters select,.filters input,.btn{background:#0f172a;color:#e5e7eb;border:1px solid var(--line);border-radius:8px;padding:8px}
+    .btn{cursor:pointer}
+    @media (max-width:860px){.name{min-width:unset}.chart{height:220px}}
+    .service-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:0}
+    .svc-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+    .svc-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
+    .svc-host{font-size:10px;color:var(--muted);font-family:monospace}
+    .svc-status{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;display:inline-block;margin-top:4px}
+    .svc-ok{background:rgba(34,197,94,.15);color:var(--green)}
+    .svc-err{background:rgba(239,68,68,.15);color:var(--red)}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+    .sys-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--line)}
+    .sys-key{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    .sys-val{font-size:12px;font-weight:600;color:var(--text)}
+    .feed-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+    .feed-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;background:var(--muted)}
+    .feed-body{flex:1}
+    .feed-text{font-size:13px;color:var(--text);margin-bottom:2px}
+    .feed-meta{font-size:11px;color:var(--muted)}
+    .up{color:var(--green)}.dn{color:var(--red)}.gold{color:var(--gold)}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar"><div class="brand">LOUP POLYMARKET COMMAND</div><div class="status"><span id="wsDot" class="dot"></span><span id="wsStatus">WS disconnected</span></div></div>
+  <div class="tabs" id="tabs"></div>
+
+  <section class="tabpane active" data-tab="Dashboard" id="tab-dashboard">
+    <div class="stats" id="statsBar"></div>
+    <div class="layout">
+      <div class="left">
+        <div class="panel version-ladder">
+          <div class="vl-head"><h3 style="font-size:18px;margin:0">VERSION LADDER</h3><span class="badge-gold">BEST ★</span></div>
+          <div id="versionLadder"></div>
+          <div class="muted" id="prodFlag">[best version flagged for PROD SYNC when API connected] 🔒</div>
+        </div>
+        <div class="panel"><h3>Live Signal Panel</h3><div id="signalPanel"></div></div>
+        <div class="panel" id="aiSpendPanel" style="background:#0d1117;border:1px solid #1e3a5f"><h3 style="color:#93c5fd">AI SPEND</h3><div id="aiSpendContent"></div></div>
+        <div class="panel"><h3>Portfolio (All Versions)</h3><canvas id="portfolioCanvas" class="chart"></canvas></div>
+      </div>
+      <aside class="right">
+        <div class="panel"><h3>Activity Feed</h3><div class="activity" id="activityFeed"></div></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="tabpane" data-tab="Models" id="tab-models"><div class="panel"><h3>Model Families</h3><div class="grid3" id="modelsGrid"></div></div></section>
+  <section class="tabpane" data-tab="Versions" id="tab-versions"><div class="panel"><h3>Version Comparison</h3><div style="overflow:auto"><table id="versionsTable"></table></div></div></section>
+  <section class="tabpane" data-tab="Signals" id="tab-signals"><div class="panel"><h3>Signals</h3><div class="filters"><select id="fModel"></select><select id="fSource"></select><select id="fVersion"></select></div><div style="max-height:560px;overflow:auto"><table id="signalsTable"></table></div></div></section>
+  <section class="tabpane" data-tab="Trades" id="tab-trades"><div class="panel"><h3>Trades</h3><div class="summary" id="tradeSummary"></div><div style="max-height:560px;overflow:auto"><table id="tradesTable"></table></div></div></section>
+  <section class="tabpane" data-tab="Control" id="tab-control"><div class="panel"><h3>Control Center</h3><div class="grid3"><div class="family"><h4>Model Builder</h4><div id="builder"></div></div><div class="family"><h4>Version Management</h4><div id="versionMgmt"></div></div><div class="family"><h4>Prod Sync</h4><div id="prodSync"></div></div></div><div class="panel" style="margin-top:10px"><h3>System Status</h3><div id="sysStatus"></div><button class="danger" id="emergencyStop">EMERGENCY STOP — PAUSE ALL MODELS</button></div></div></section>
+
+  <section class="tabpane" data-tab="Infrastructure" id="tab-Infrastructure">
+    <div class="panel">
+      <div class="section-title">SERVICES</div>
+      <div id="infra-services" class="service-grid">Loading...</div>
+      <div class="grid-2" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="panel" style="padding:10px">
+          <h3 style="font-size:13px;margin:0 0 8px 0">⚙️ System Resources</h3>
+          <div id="infra-system">Loading...</div>
+        </div>
+        <div class="panel" style="padding:10px">
+          <h3 style="font-size:13px;margin:0 0 8px 0">🐳 Docker Containers</h3>
+          <div id="infra-containers">Loading...</div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:14px;padding:10px">
+        <h3 style="font-size:13px;margin:0 0 8px 0">🤖 Active AI Sessions</h3>
+        <div id="infra-sessions"><div class="muted">Session data requires relay connection</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tabpane" data-tab="Intelligence" id="tab-Intelligence">
+    <div class="layout" style="flex-direction:column">
+      <div class="panel" style="background:#0d1117;border:1px solid #1e3a5f">
+        <h3 style="color:#93c5fd">💰 AI Token Spend</h3>
+        <div class="stats" id="cost-summary" style="margin-bottom:10px">
+          <div class="stat"><div class="k">Today</div><div class="v" id="cost-today">$0.0000</div></div>
+          <div class="stat"><div class="k">This Week</div><div class="v" id="cost-week">$0.0000</div></div>
+          <div class="stat"><div class="k">All-Time</div><div class="v" id="cost-alltime">$0.0000</div></div>
+        </div>
+        <div id="cost-calls"><div class="muted">No AI calls yet</div></div>
+      </div>
+      <div class="panel">
+        <h3>📡 Signal Accuracy</h3>
+        <div style="overflow:auto">
+          <table id="signal-accuracy-table" style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr><th>Signal Source</th><th>Accuracy</th><th>Avg Strength</th><th>Total Calls</th><th>Edge</th></tr></thead>
+            <tbody id="signal-accuracy-body"><tr><td colspan="5" class="muted" style="padding:12px;text-align:center">No trade data yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>📰 BTC News Feed</h3>
+        <div id="news-feed"><div class="muted">No news data yet</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+const state={prices:{btc:0},markets:[],models:[],versions:[],recentTrades:[],recentSignals:[],activity:[],systemStatus:{},fearGreed:50,connected:false,lastSignalTs:Date.now()};
+const tabs=['Dashboard','Models','Versions','Signals','Trades','Control','Infrastructure','Intelligence'];
+const el=id=>document.getElementById(id);
+(function initTabs(){el('tabs').innerHTML=tabs.map((t,i)=>`<button class='tab ${i===0?'active':''}' data-t='${t}'>${t}</button>`).join('');document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));document.querySelector(`[data-tab='${b.dataset.t}']`).classList.add('active');});})();
+function fmt(n,d=2){return Number(n??0).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d})}
+function pct(n){return `${(Number(n||0)*100).toFixed(1)}%`}
+function bestVersion(){const v=state.versions.slice();const m20=v.filter(x=>(x.stats?.trades||0)>=20);if(m20.length)return m20.sort((a,b)=>(b.stats?.sharpe||0)-(a.stats?.sharpe||0))[0];return v.sort((a,b)=>(b.balance||100)-(a.balance||100))[0]}
+function trend(v){if(v>0.66)return '↑';if(v<0.45)return '↓';return '─'}
+function renderStats(){const up=state.markets[0]?.upOdds??0,down=state.markets[0]?.downOdds??0;const total=state.models.reduce((a,m)=>a+(m.balance||100),0);const start=state.models.reduce((a,m)=>a+(m.startingBalance||100),0);const roi=start?((total-start)/start):0;const activePos=state.recentTrades.filter(t=>t.status==='open').length;const aiToday=state.aiCostSummary?.today??0;el('statsBar').innerHTML=[['BTC',`$${fmt(state.prices.btc,0)}`],['Odds UP / DOWN',`${(up*100).toFixed(0)}% / ${(down*100).toFixed(0)}%`],['Portfolio',`$${fmt(total)} (${pct(roi)})`],['Active Positions',activePos],['Fear & Greed',state.fearGreed],['AI Cost Today',`$${aiToday.toFixed(3)}`]].map(s=>`<div class='stat'><div class='k'>${s[0]}</div><div class='v'>${s[1]}</div></div>`).join('')}
+function renderLadder(){const best=bestVersion();const rows=state.versions.slice().sort((a,b)=>(a.modelId-b.modelId)||(a.versionNum-b.versionNum));el('versionLadder').innerHTML=rows.map(v=>{const st=v.stats||{},bal=v.balance??100,win=st.winRate??0;const isBest=best&&best.id===v.id;const model=state.models.find(m=>m.id===v.modelId)?.name||'Model';return `<div class='vrow ${isBest?'best':''}' data-id='${v.id}'><div class='vmain'><span class='name'>Loup v${v.versionNum} (${model}) ${isBest?'★':''}</span><span class='money ${bal>=100?'pos':'neg'}'>$${fmt(bal)}</span><span>W:${st.wins||0} L:${st.losses||0}</span><span>${Math.round((win||0)*100)}% <span class='trend'>${trend(win)}</span></span>${isBest?'<span class="badge-gold">BEST</span>':''}</div><div class='muted'>mutation: "${v.mutation||'Initial'}"</div><div class='expand'><div>Trades: ${st.trades||0} • ROI: ${pct(st.roi||0)} • Sharpe: ${fmt(st.sharpe||0,2)} • Max DD: $${fmt(st.maxDrawdown||0)}</div><canvas class='mini-eq' id='mini-${v.id}'></canvas></div></div>`}).join('');
+  document.querySelectorAll('.vrow').forEach(r=>r.onclick=()=>{r.classList.toggle('open');drawMini(+r.dataset.id)});
+  if(best) el('prodFlag').textContent=`[v${best.versionNum} flagged for PROD SYNC when API connected] 🔒`;
+}
+function drawMini(id){const c=el('mini-'+id);if(!c)return;const ctx=c.getContext('2d');c.width=c.clientWidth*devicePixelRatio;c.height=c.clientHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);ctx.clearRect(0,0,c.clientWidth,c.clientHeight);const pts=Array.from({length:24},(_,i)=>100+Math.sin(i/3+id)*4+i*0.25);smooth(ctx,pts,c.clientWidth,c.clientHeight,'#f59e0b')}
+function smooth(ctx,data,w,h,color){const min=Math.min(...data),max=Math.max(...data),pad=12;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();data.forEach((v,i)=>{const x=pad+(i*(w-pad*2)/(data.length-1));const y=h-pad-((v-min)/(max-min||1))*(h-pad*2);if(i===0)ctx.moveTo(x,y);else{const px=pad+((i-1)*(w-pad*2)/(data.length-1));const py=h-pad-((data[i-1]-min)/(max-min||1))*(h-pad*2);const cx=(px+x)/2;ctx.quadraticCurveTo(px,py,cx,(py+y)/2);if(i===data.length-1)ctx.quadraticCurveTo(x,y,x,y)}});ctx.stroke()}
+function renderSignals(){const active=state.models.filter(m=>m.isActive);el('signalPanel').innerHTML=active.map(m=>{const s=m.signal||{},src=s.sources||{};const keys=['momentum','odds_movement','volume_spike','fear_greed','news','x_sentiment'];return `<div class='signal-card'><div class='sig-head'><strong>${m.name} v${m.currentVersion?.versionNum||1}</strong><span class='state ${s.state||'watching'}'>${(s.state||'WATCHING').toUpperCase()}</span></div>${keys.map(k=>{const val=Math.max(-1,Math.min(1,Number(src[k]??0)));const w=Math.abs(val)*50;const left=val<0?50-w:50;return `<div class='k'>${k}</div><div class='meter'><div class='fill' style='left:${left}%;width:${w}%'></div></div>`}).join('')}<div class='k'>Composite ${fmt(s.composite||0,2)} / Threshold ${fmt(s.threshold||0,2)} • Next decision: <span data-cd='${m.id}'>5s</span></div></div>`}).join('')}
+function renderActivity(){el('activityFeed').innerHTML=(state.activity||[]).slice(0,10).map(a=>`<div class='act'>${a.text}<time>${new Date(a.ts||Date.now()).toLocaleTimeString()}</time></div>`).join('')}
+function drawPortfolio(){const c=el('portfolioCanvas');const ctx=c.getContext('2d');c.width=c.clientWidth*devicePixelRatio;c.height=c.clientHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);ctx.clearRect(0,0,c.clientWidth,c.clientHeight);const colors=['#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ef4444','#14b8a6'];state.versions.forEach((v,i)=>{const pts=Array.from({length:30},(_,x)=>(v.balance||100)-8+Math.sin(x/4+i)*3+x*0.35);smooth(ctx,pts,c.clientWidth,c.clientHeight,colors[i%colors.length])})}
+function renderModels(){el('modelsGrid').innerHTML=state.models.map(m=>{const vers=state.versions.filter(v=>v.modelId===m.id).sort((a,b)=>a.versionNum-b.versionNum);return `<div class='family'><div style='display:flex;justify-content:space-between'><strong>${m.name}</strong><label><input type='checkbox' class='toggle' ${m.isActive?'checked':''} data-mid='${m.id}'></label></div><p class='muted'>${m.description||'Adaptive strategy family.'}</p><div>${vers.map(v=>`<div class='pill ${m.currentVersion?.id===v.id?'':'muted'}'>v${v.versionNum} • ${Math.round((v.stats?.winRate||0)*100)}% • $${fmt(v.balance||100)}</div>`).join('')}</div><button class='btn' data-open='${m.id}' style='margin-top:8px'>Expand</button></div>`}).join('')}
+function renderVersions(){const cols=['Version','Parent','Created','Mutation','Trades','W/L','Win%','P&L','ROI','Sharpe','Max DD','Status'];const rows=state.versions.map(v=>{const m=state.models.find(x=>x.id===v.modelId);const st=v.stats||{};const pnl=(v.balance??100)-100;const qualifies=(st.trades||0)>=20&&(st.roi||0)>0;const status=(bestVersion()?.id===v.id)?'BEST ★':(m?.currentVersion?.id===v.id?'Active':'Idle');return {v,m,st,pnl,status,qualifies}});
+  el('versionsTable').innerHTML=`<thead><tr>${cols.map((c,i)=>`<th data-c='${i}'>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr class='main-row'><td>${r.m?.name?.slice(0,4)||'Mod'} v${r.v.versionNum}</td><td>${r.v.parentVersionId?`v${r.v.parentVersionId}`:'seed'}</td><td>${r.v.createdAt?new Date(r.v.createdAt).toLocaleString():'-'} </td><td>${r.v.mutation||'Initial'}</td><td>${r.st.trades||0}</td><td>${r.st.wins||0}/${r.st.losses||0}</td><td>${Math.round((r.st.winRate||0)*100)}%</td><td class='${r.pnl>=0?'pos':'neg'}'>${r.pnl>=0?'+':''}$${fmt(r.pnl)}</td><td>${pct(r.st.roi||0)}</td><td>${fmt(r.st.sharpe||0,2)}</td><td>$${fmt(r.st.maxDrawdown||0)}</td><td>${r.status}</td></tr><tr class='row-expand'><td colspan='12'><div>Weights ${(r.v.weights?Object.entries(r.v.weights):[['momentum',.2],['x_sentiment',.12],['news',.18]]).map(([k,val])=>`<div class='k'>${k}</div><div class='meter'><div class='fill' style='left:50%;width:${Math.abs(val)*50}%'></div></div>`).join('')}<div class='k'>Signal accuracy ${(r.v.signalAccuracy?Object.entries(r.v.signalAccuracy):[['momentum',.61],['news',.48],['x_sentiment',.72]]).map(([k,v])=>`${k}:${Math.round(v*100)}%`).join(' • ')}</div><button class='btn' ${r.qualifies?'':'disabled'}>${r.qualifies?'Promote to PROD':'Promote to PROD (need >=20 trades & positive ROI)'}</button></div></td></tr>`).join('')}</tbody>`;
+  Array.from(el('versionsTable').querySelectorAll('.main-row')).forEach(tr=>tr.onclick=()=>tr.classList.toggle('open'));
+}
+function renderSignalsTable(){const sig=state.recentSignals||[];const models=['All',...new Set(state.models.map(m=>m.name))],sources=['All',...new Set(sig.map(s=>s.source||'composite'))],versions=['All',...new Set(sig.map(s=>`v${s.versionNum||1}`))];el('fModel').innerHTML=models.map(x=>`<option>${x}</option>`).join('');el('fSource').innerHTML=sources.map(x=>`<option>${x}</option>`).join('');el('fVersion').innerHTML=versions.map(x=>`<option>${x}</option>`).join('');const fm=el('fModel').value||'All',fs=el('fSource').value||'All',fv=el('fVersion').value||'All';const fil=sig.filter(s=>(fm==='All'||s.model===fm)&&(fs==='All'||(s.source||'composite')===fs)&&(fv==='All'||`v${s.versionNum||1}`===fv));el('signalsTable').innerHTML=`<thead><tr><th>Timestamp</th><th>Model</th><th>Version</th><th>Source</th><th>Value</th><th>Direction</th></tr></thead><tbody>${fil.map(s=>`<tr style='${s.type==='run'?'border-left:3px solid #3b82f6':''};${s.decision==='sonnet'?'background:rgba(245,158,11,.12)':''}'><td>${new Date(s.ts||Date.now()).toLocaleTimeString()}</td><td>${s.model||'-'}</td><td>v${s.versionNum||1}</td><td>${s.source||'composite'}</td><td>${fmt(s.value||0,2)}</td><td>${(s.value||0)>=0?'UP':'DOWN'} ${s.reasoning?`<span class='muted'>${s.reasoning}</span>`:''}</td></tr>`).join('')}</tbody>`;['fModel','fSource','fVersion'].forEach(i=>el(i).onchange=renderSignalsTable)}
+function renderTrades(){const t=state.recentTrades||[];const wins=t.filter(x=>(x.pnl||0)>0),loss=t.filter(x=>(x.pnl||0)<0),net=t.reduce((a,x)=>a+(x.pnl||0),0),best=Math.max(0,...t.map(x=>x.pnl||0)),worst=Math.min(0,...t.map(x=>x.pnl||0));el('tradeSummary').innerHTML=[`Total Won: ${wins.length}`,`Total Lost: ${loss.length}`,`Win Rate: ${t.length?Math.round(wins.length/t.length*100):0}%`,`Best: $${fmt(best)}`,`Worst: $${fmt(worst)}`,`Net P&L: ${net>=0?'+':''}$${fmt(net)}`].map(x=>`<div class='pill'>${x}</div>`).join('');el('tradesTable').innerHTML=`<thead><tr><th>Model</th><th>Version</th><th>Market</th><th>Dir</th><th>Amount</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Duration</th><th>Status</th><th>AI Cost</th></tr></thead><tbody>${t.map(r=>{const tCost=r.sonnet_cost_usd||0;const costBadge=tCost>0?`<span style='background:#1e293b;color:#93c5fd;border:1px solid #334155;border-radius:6px;padding:2px 5px;font-size:10px;font-weight:700'>$${tCost.toFixed(4)}</span>`:'-';return`<tr style='${r.status==='open'?'animation:pulse 1.5s infinite;border-left:3px solid #3b82f6':''}'><td>${r.model_name||r.model||'-'}</td><td>v${r.versionNum||1}</td><td>${r.market_id||r.market||'-'}</td><td>${r.direction||'-'}</td><td>$${fmt(r.amount_usdc||r.amount||0)}</td><td>${fmt(r.entry_price||r.entry||0,3)}</td><td>${(r.exit_price||r.exit)!=null?fmt(r.exit_price||r.exit,3):'-'}</td><td class='${(r.pnl||0)>=0?'pos':'neg'}'>${(r.pnl||0)>=0?'+':''}$${fmt(r.pnl||0)}</td><td>${r.duration||'-'}</td><td>${r.status||'-'} ${(r.sonnet_reasoning||r.reasoning)?`<div class='muted' style='font-size:10px'>${r.sonnet_reasoning||r.reasoning}</div>`:''}</td><td>${costBadge}</td></tr>`}).join('')}</tbody>`}
+function renderControl(){el('builder').innerHTML=['momentum','odds_movement','volume_spike','fear_greed','news','x_sentiment'].map(k=>`<div class='k'>${k}</div><input type='range' min='0' max='1' step='0.01' value='0.2' style='width:100%'>`).join('')+`<button class='btn' style='margin-top:8px'>Create Model</button>`;el('versionMgmt').innerHTML=state.versions.map(v=>`<div class='pill'>${state.models.find(m=>m.id===v.modelId)?.name||'Model'} v${v.versionNum} <button class='btn'>Promote</button> <button class='btn'>Demote</button></div>`).join('');el('prodSync').innerHTML=state.models.map(m=>{const cand=state.versions.filter(v=>v.modelId===m.id&&(v.stats?.trades||0)>=20&&(v.stats?.roi||0)>0).sort((a,b)=>(b.stats?.sharpe||0)-(a.stats?.sharpe||0))[0];return `<div class='pill'>${m.name}: ${cand?`v${cand.versionNum} ready`:'No qualifying version'} <label><input type='checkbox' class='toggle' ${cand?'':'disabled'}></label></div>`}).join('');el('sysStatus').innerHTML=`<div class='pill'>Last Price: ${state.systemStatus.lastPrice||'-'}</div><div class='pill'>Last Odds: ${state.systemStatus.lastOdds||'-'}</div><div class='pill'>Last Signal: ${state.systemStatus.lastSignal||'-'}</div><div class='pill'>Blackouts: ${state.models.filter(m=>m.blackout).length}</div>`;el('emergencyStop').onclick=()=>fetch('/api/emergency-stop',{method:'POST'}).catch(()=>{})}
+function renderAiSpend(){const ai=state.aiCostSummary||{today:0,week:0,allTime:0,recentCalls:[]};const calls=ai.recentCalls||[];el('aiSpendContent').innerHTML=`<div style='display:flex;gap:20px;margin-bottom:10px;flex-wrap:wrap'><div><div class='k'>Today</div><div class='v' style='font-size:16px;color:#93c5fd'>$${(ai.today||0).toFixed(3)}</div></div><div><div class='k'>Week</div><div class='v' style='font-size:16px;color:#93c5fd'>$${(ai.week||0).toFixed(3)}</div></div><div><div class='k'>All-time</div><div class='v' style='font-size:16px;color:#93c5fd'>$${(ai.allTime||0).toFixed(3)}</div></div></div>${calls.length?`<div class='k' style='margin-bottom:6px'>Recent calls</div><div style='font-size:12px;font-family:monospace'>${calls.map(c=>{const ts=c.timestamp?new Date(c.timestamp).toLocaleTimeString():'--:--:--';const cost=`$${(c.cost_usd||0).toFixed(4)}`;const tokens=`${c.tokens_in||0}in/${c.tokens_out||0}out`;const tradeLink=c.trade_id?`→ Trade #${c.trade_id}`:c.call_type==='trade_decision'?'→ SKIP':'';return`<div style='display:flex;gap:10px;padding:4px 0;border-bottom:1px solid #1e293b;align-items:center'><span style='color:#64748b'>${ts}</span><span style='color:#f59e0b;min-width:100px'>${c.call_type||'trade_decision'}</span><span style='color:#6b7280;min-width:90px'>${tokens}</span><span style='color:#22c55e;min-width:55px'>${cost}</span><span style='color:#94a3b8'>${tradeLink}</span></div>`}).join('')}</div>`:'<div class=\'muted\' style=\'font-size:12px\'>No AI calls logged yet</div>'}`}
+function renderAll(){renderStats();renderLadder();renderSignals();renderActivity();drawPortfolio();renderModels();renderVersions();renderSignalsTable();renderTrades();renderAiSpend();renderControl()}
+function sample(){if(state.models.length)return;state.prices={btc:67809};state.markets=[{upOdds:.31,downOdds:.69}];state.models=[{id:1,name:'Conservative',isActive:true,currentVersion:{id:3,versionNum:3},balance:108.6,startingBalance:100,stats:{trades:20,wins:15,losses:5,winRate:.75,roi:.086,sharpe:1.6,maxDrawdown:-4.2},signal:{composite:.52,threshold:.68,state:'watching',sources:{momentum:.55,odds_movement:.22,volume_spike:-.2,fear_greed:.1,news:.18,x_sentiment:.42}}},{id:2,name:'Balanced',isActive:true,currentVersion:{id:4,versionNum:2},balance:102.4,startingBalance:100,stats:{trades:19,wins:12,losses:7,winRate:.63,roi:.024,sharpe:1.1,maxDrawdown:-2.4},signal:{composite:.71,threshold:.68,state:'betting',sources:{momentum:.66,odds_movement:.42,volume_spike:.12,fear_greed:.08,news:.21,x_sentiment:.15}}},{id:3,name:'Aggressive',isActive:false,currentVersion:{id:5,versionNum:1},balance:98.2,startingBalance:100,stats:{trades:14,wins:8,losses:6,winRate:.57,roi:-.018,sharpe:.8,maxDrawdown:-4.2},signal:{composite:-.4,threshold:.7,state:'blackout',sources:{momentum:-.55,odds_movement:-.22,volume_spike:.1,fear_greed:-.25,news:-.1,x_sentiment:-.35}},blackout:{until:Date.now()+1800000}}];state.versions=[{id:1,modelId:1,versionNum:1,mutation:'Initial',balance:98.2,stats:{trades:14,wins:8,losses:6,winRate:.57,roi:.024,sharpe:.8,maxDrawdown:-4.2}},{id:2,modelId:1,versionNum:2,parentVersionId:1,mutation:'x_sentiment 0.20→0.16',balance:102.4,stats:{trades:19,wins:12,losses:7,winRate:.63,roi:.062,sharpe:1.1,maxDrawdown:-2.1}},{id:3,modelId:1,versionNum:3,parentVersionId:2,mutation:'reduced x_sentiment 0.20→0.12 (38% acc)',balance:108.6,stats:{trades:20,wins:15,losses:5,winRate:.75,roi:.086,sharpe:1.6,maxDrawdown:-1.3}},{id:4,modelId:2,versionNum:1,mutation:'Initial',balance:100,stats:{trades:0,wins:0,losses:0,winRate:0,roi:0,sharpe:0,maxDrawdown:0}},{id:5,modelId:3,versionNum:1,mutation:'Initial',balance:100,stats:{trades:0,wins:0,losses:0,winRate:0,roi:0,sharpe:0,maxDrawdown:0}}];state.activity=[{text:'🟢 Bet placed: Balanced v2 UP $4.20 @ 0.31',ts:Date.now()-120000},{text:'🔴 Bet closed: Conservative v1 DOWN -$3.10 (loss)',ts:Date.now()-90000},{text:'💡 Weight adjusted: x_sentiment 0.20→0.12 (new version created)',ts:Date.now()-70000},{text:'⚠️ Blackout: Aggressive v1 paused 30min (3 losses)',ts:Date.now()-20000}];state.recentTrades=[{model:'Balanced',versionNum:2,market:'BTC 5m',direction:'UP',amount:4.2,entry:.31,exit:.36,pnl:1.1,duration:'4m',status:'closed',reasoning:'odds breakout + momentum'},{model:'Conservative',versionNum:1,market:'BTC 5m',direction:'DOWN',amount:3.8,entry:.62,exit:.58,pnl:-3.1,duration:'5m',status:'closed'},{model:'Conservative',versionNum:3,market:'BTC 5m',direction:'UP',amount:2.2,entry:.29,pnl:0,duration:'1m',status:'open',reasoning:'Sonnet: composite near threshold'}];state.recentSignals=[{ts:Date.now()-50000,model:'Conservative',versionNum:3,source:'momentum',value:.55},{ts:Date.now()-40000,model:'Conservative',versionNum:3,source:'x_sentiment',value:.42},{ts:Date.now()-30000,model:'Balanced',versionNum:2,source:'composite',value:.71,decision:'sonnet',reasoning:'Momentum + odds movement aligned'},{ts:Date.now()-20000,model:'Balanced',versionNum:2,source:'run',value:.66,type:'run',reasoning:'3-signal run detected'}];state.systemStatus={lastPrice:new Date().toISOString(),lastOdds:new Date().toISOString(),lastSignal:new Date().toISOString()};}
+function connectWS(){const host=location.hostname||'localhost';let ws;const open=()=>{const proto=location.protocol==="https:"?"wss:":"ws:"; ws=new WebSocket(`${proto}//${host}/ws`);ws.onopen=()=>{state.connected=true;el('wsDot').classList.add('ok');el('wsStatus').textContent='WS connected'};ws.onclose=()=>{state.connected=false;el('wsDot').classList.remove('ok');el('wsStatus').textContent='WS reconnecting...';setTimeout(open,1500)};ws.onerror=()=>ws.close();ws.onmessage=e=>{try{const d=JSON.parse(e.data);Object.assign(state,d);state.lastSignalTs=Date.now();renderAll()}catch{}}};open()}
+setInterval(()=>{document.querySelectorAll('[data-cd]').forEach(x=>{const n=Math.max(0,(parseInt(x.textContent)||5)-1);x.textContent=`${n}s`});if(Date.now()-state.lastSignalTs>5000){document.querySelectorAll('.fill').forEach(f=>f.style.filter='saturate(1.15)')}},1000);
+async function pollApi(){try{const r=await fetch('/api/dashboard');if(r.ok){Object.assign(state,await r.json());renderAll()}}catch{}}
+sample();renderAll();connectWS();setInterval(pollApi,5000);
+
+// ── Infrastructure tab ────────────────────────────────────────────────────
+function loadInfra() {
+  fetch('/api/infra').then(r=>r.json()).then(data => {
+    const svcs = [data.polymarket, ...(data.services||[])].filter(Boolean);
+    el('infra-services').innerHTML = svcs.map(s => `
+      <div class="svc-card">
+        <div class="svc-name">${s.name}</div>
+        <div class="svc-host">${s.host||'localhost'}${s.port?':'+s.port:''}</div>
+        <span class="svc-status ${s.status==='ok'?'svc-ok':'svc-err'}">${s.status==='ok'?'● ONLINE':'● ERROR'}</span>
+      </div>
+    `).join('');
+    if (data.memory) {
+      el('infra-system').innerHTML = `
+        <div class="sys-row"><span class="sys-key">RAM</span><span class="sys-val">${data.memory.used}MB / ${data.memory.total}MB (${data.memory.pct}%)</span></div>
+        <div class="sys-row"><span class="sys-key">CPU</span><span class="sys-val">${data.cpu||0}%</span></div>
+        ${data.disk?`<div class="sys-row"><span class="sys-key">Disk</span><span class="sys-val">${data.disk.used} / ${data.disk.size} (${data.disk.pct})</span></div>`:''}
+      `;
+    }
+    if (data.containers && data.containers.length) {
+      el('infra-containers').innerHTML = data.containers.map(c => `
+        <div class="sys-row">
+          <span class="sys-key" style="font-family:monospace;font-size:11px">${c.name}</span>
+          <span class="svc-status ${c.ok?'svc-ok':'svc-err'}" style="font-size:9px">${c.ok?'UP':'DOWN'}</span>
+        </div>
+      `).join('');
+    } else {
+      el('infra-containers').innerHTML = '<div class="muted" style="font-size:12px">No containers found</div>';
+    }
+  }).catch(e => { el('infra-services').innerHTML = `<div class="muted">Error: ${e.message}</div>`; });
+}
+
+// ── Intelligence tab ──────────────────────────────────────────────────────
+function loadIntelligence() {
+  fetch('/api/ai-costs').then(r=>r.json()).then(data => {
+    const s = data.summary || {};
+    el('cost-today').textContent = '$' + (s.today||0).toFixed(4);
+    el('cost-week').textContent = '$' + (s.week||0).toFixed(4);
+    el('cost-alltime').textContent = '$' + (s.all_time||0).toFixed(4);
+    if (data.costs && data.costs.length) {
+      el('cost-calls').innerHTML = `<div style="overflow:auto;max-height:200px"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th>Time</th><th>Type</th><th>Tokens</th><th>Cost</th><th>Result</th></tr></thead><tbody>${
+        data.costs.map(c => `<tr>
+          <td style="padding:6px;border-bottom:1px solid var(--line)">${new Date(c.timestamp).toLocaleTimeString()}</td>
+          <td style="padding:6px;border-bottom:1px solid var(--line)">${c.call_type||'-'}</td>
+          <td style="padding:6px;border-bottom:1px solid var(--line);font-family:monospace">${c.tokens_in||0}in/${c.tokens_out||0}out</td>
+          <td style="padding:6px;border-bottom:1px solid var(--line);font-family:monospace" class="${(c.cost_usd||0)>0?'gold':''}">$${(c.cost_usd||0).toFixed(5)}</td>
+          <td style="padding:6px;border-bottom:1px solid var(--line)">${c.trade_id?'🎰 BET':'⏭ skip'}</td>
+        </tr>`).join('')
+      }</tbody></table></div>`;
+    }
+  }).catch(()=>{});
+
+  fetch('/api/signal-accuracy').then(r=>r.json()).then(data => {
+    if (data.signalStats && data.signalStats.length) {
+      el('signal-accuracy-body').innerHTML = data.signalStats.map(s => {
+        const edge = ((s.accuracy||0.5) - 0.5).toFixed(3);
+        return `<tr>
+          <td style="padding:7px">${s.source}</td>
+          <td style="padding:7px" class="${(s.accuracy||0)>0.5?'up':'dn'}">${((s.accuracy||0)*100).toFixed(1)}%</td>
+          <td style="padding:7px;font-family:monospace">${(s.avg_strength||0).toFixed(3)}</td>
+          <td style="padding:7px;font-family:monospace">${s.total||0}</td>
+          <td style="padding:7px;font-family:monospace" class="${parseFloat(edge)>0?'up':'dn'}">${parseFloat(edge)>0?'+':''}${edge}</td>
+        </tr>`;
+      }).join('');
+    }
+  }).catch(()=>{});
+
+  fetch('/api/news').then(r=>r.json()).then(data => {
+    if (data.news && data.news.length) {
+      el('news-feed').innerHTML = data.news.slice(0,10).map(n => {
+        const score = n.score||0;
+        const dir = score>0.1?'📈':score<-0.1?'📉':'➡️';
+        const cls = score>0.1?'up':score<-0.1?'dn':'';
+        return `<div class="feed-item">
+          <div class="feed-dot" style="background:${score>0.1?'var(--green)':score<-0.1?'var(--red)':'var(--muted)'}"></div>
+          <div class="feed-body">
+            <div class="feed-text">${n.headline||n.title||'News item'}</div>
+            <div class="feed-meta"><span class="${cls}">${dir} ${score.toFixed(3)}</span> · ${n.source||''} · ${new Date(n.timestamp).toLocaleTimeString()}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }).catch(()=>{});
+}
+
+// Hook tab clicks to load data
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const t = btn.dataset.t;
+    if (t === 'Infrastructure') loadInfra();
+    if (t === 'Intelligence') loadIntelligence();
+  });
+});
+</script>
+</body>
+</html>
