@@ -1,0 +1,14 @@
+{
+  "name": "readme-generator",
+  "version": "1.0.0",
+  "description": "Autonomous README regenerator — pulls live stats, calls Ollama, pushes to GitHub",
+  "type": "commonjs",
+  "main": "generate.js",
+  "scripts": {
+    "generate": "node generate.js",
+    "test": "node generate.js --dry-run"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
