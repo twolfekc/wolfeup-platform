@@ -1,0 +1,58 @@
+name: Deploy Mission Control
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/mission-control/**'
+
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual deploy'
+        required: false
+        default: 'manual trigger'
+
+jobs:
+  deploy:
+    name: Deploy to Web Server
+    runs-on: ubuntu-latest
+    # Skip if the commit is from readme-bot (prevents infinite loop)
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Send deploy webhook
+        env:
+          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+          DEPLOY_WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+        run: |
+          PAYLOAD='{"project":"mission-control","ref":"${{ github.sha }}","actor":"${{ github.actor }}"}'
+          SIGNATURE="sha256=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$DEPLOY_WEBHOOK_SECRET" | awk '{print $2}')"
+
+          HTTP_STATUS=$(curl -s -o /tmp/webhook-response.txt -w "%{http_code}" \
+            -X POST "$DEPLOY_WEBHOOK_URL/deploy/mission-control" \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature-256: $SIGNATURE" \
+            -d "$PAYLOAD" \
+            --max-time 15)
+
+          echo "Webhook response: HTTP $HTTP_STATUS"
+          cat /tmp/webhook-response.txt
+
+          if [ "$HTTP_STATUS" != "202" ]; then
+            echo "Webhook failed with status $HTTP_STATUS"
+            exit 1
+          fi
+
+          echo "Deploy triggered successfully."
+
+      - name: Summary
+        run: |
+          echo "## Deploy Triggered" >> $GITHUB_STEP_SUMMARY
+          echo "- **Project:** mission-control" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Actor:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Webhook:** ${{ secrets.DEPLOY_WEBHOOK_URL }}/deploy/mission-control" >> $GITHUB_STEP_SUMMARY
