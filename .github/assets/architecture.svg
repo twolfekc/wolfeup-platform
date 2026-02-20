@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500">
+  <defs>
+    <linearGradient id="abg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e1b4b"/>
+    </linearGradient>
+    <filter id="aglow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="900" height="500" fill="url(#abg)" rx="12"/>
+
+  <!-- Title -->
+  <text x="450" y="35" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8" letter-spacing="4" font-weight="600">ARCHITECTURE</text>
+
+  <!-- Gateway Server -->
+  <rect x="340" y="55" width="220" height="70" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="450" y="80" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#60a5fa" font-weight="700">GATEWAY SERVER</text>
+  <text x="450" y="97" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">OpenClaw Gateway</text>
+  <text x="450" y="112" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Reply Orchestrator</text>
+
+  <!-- Mac Node -->
+  <rect x="50" y="175" width="200" height="90" rx="8" fill="#1e293b" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="150" y="200" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#a78bfa" font-weight="700">MAC NODE</text>
+  <text x="150" y="217" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Chrome CDP</text>
+  <text x="150" y="232" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">15 MCP Servers</text>
+  <text x="150" y="247" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">X/Twitter Bot</text>
+
+  <!-- Web Server -->
+  <rect x="340" y="175" width="220" height="110" rx="8" fill="#1e293b" stroke="#34d399" stroke-width="1.5"/>
+  <text x="450" y="200" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#34d399" font-weight="700">WEB SERVER</text>
+  <text x="450" y="217" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Mission Control</text>
+  <text x="450" y="232" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Auth Service</text>
+  <text x="450" y="247" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Games Arcade (75+)</text>
+  <text x="450" y="262" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Agent Dashboards</text>
+  <text x="450" y="277" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Ping Platform</text>
+
+  <!-- GPU Server -->
+  <rect x="650" y="175" width="200" height="90" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="750" y="200" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#f59e0b" font-weight="700">GPU SERVER</text>
+  <text x="750" y="217" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">RTX 4090 (24GB)</text>
+  <text x="750" y="232" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Ollama + 6 Models</text>
+  <text x="750" y="247" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">LLM Inference</text>
+
+  <!-- NAS -->
+  <rect x="650" y="310" width="200" height="60" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1"/>
+  <text x="750" y="335" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#64748b" font-weight="700">NAS / FALLBACK</text>
+  <text x="750" y="352" text-anchor="middle" font-family="monospace" font-size="10" fill="#475569">Ollama Backup</text>
+
+  <!-- Cloudflare -->
+  <rect x="170" y="400" width="560" height="50" rx="8" fill="#1e293b" stroke="#f97316" stroke-width="1.5" stroke-dasharray="4"/>
+  <text x="450" y="425" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#f97316" font-weight="700">CLOUDFLARE TUNNEL</text>
+  <text x="450" y="440" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">*.wolfeup.com  &#8594;  Web Server</text>
+
+  <!-- Connections -->
+  <!-- Gateway to Mac -->
+  <line x1="340" y1="100" x2="250" y2="175" stroke="#a78bfa" stroke-width="1" opacity="0.4"/>
+  <!-- Gateway to Web -->
+  <line x1="450" y1="125" x2="450" y2="175" stroke="#34d399" stroke-width="1" opacity="0.4"/>
+  <!-- Gateway to GPU -->
+  <line x1="560" y1="100" x2="650" y2="200" stroke="#f59e0b" stroke-width="1" opacity="0.4"/>
+  <!-- Mac to Gateway -->
+  <line x1="250" y1="200" x2="340" y2="90" stroke="#3b82f6" stroke-width="1" opacity="0.4" stroke-dasharray="3"/>
+  <!-- GPU to NAS -->
+  <line x1="750" y1="265" x2="750" y2="310" stroke="#64748b" stroke-width="1" opacity="0.3" stroke-dasharray="3"/>
+  <!-- Web to Cloudflare -->
+  <line x1="450" y1="285" x2="450" y2="400" stroke="#f97316" stroke-width="1" opacity="0.3"/>
+
+  <!-- Legend -->
+  <rect x="50" y="410" width="100" height="35" rx="4" fill="#0f172a" stroke="#334155" stroke-width="0.5"/>
+  <circle cx="68" cy="422" r="4" fill="#3b82f6"/>
+  <text x="80" y="426" font-family="monospace" font-size="9" fill="#64748b">Control</text>
+  <circle cx="68" cy="436" r="4" fill="#f59e0b"/>
+  <text x="80" y="440" font-family="monospace" font-size="9" fill="#64748b">Inference</text>
+
+  <!-- Trading Box -->
+  <rect x="50" y="310" width="200" height="60" rx="8" fill="#1e293b" stroke="#ec4899" stroke-width="1"/>
+  <text x="150" y="335" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#ec4899" font-weight="700">TRADING</text>
+  <text x="150" y="352" text-anchor="middle" font-family="monospace" font-size="10" fill="#64748b">Polymarket + BTC</text>
+
+  <!-- Trading to Gateway -->
+  <line x1="150" y1="310" x2="380" y2="125" stroke="#ec4899" stroke-width="1" opacity="0.3" stroke-dasharray="3"/>
+</svg>

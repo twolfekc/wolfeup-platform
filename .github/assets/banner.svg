@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0f"/>
+      <stop offset="50%" style="stop-color:#111127"/>
+      <stop offset="100%" style="stop-color:#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#60a5fa"/>
+      <stop offset="50%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#a78bfa;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bg)"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.04">
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(60,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(120,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(180,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(240,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(300,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(360,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(420,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(480,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(540,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(600,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(660,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(720,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(780,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(840,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(900,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(960,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(1020,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(1080,0)"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#60a5fa" stroke-width="0.5" transform="translate(1140,0)"/>
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="#60a5fa" stroke-width="0.5" transform="translate(0,60)"/>
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="#60a5fa" stroke-width="0.5" transform="translate(0,120)"/>
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="#60a5fa" stroke-width="0.5" transform="translate(0,180)"/>
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="#60a5fa" stroke-width="0.5" transform="translate(0,240)"/>
+  </g>
+
+  <!-- Animated pulse circles -->
+  <circle cx="200" cy="150" r="4" fill="#60a5fa" opacity="0.6" filter="url(#softGlow)">
+    <animate attributeName="r" values="4;20;4" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0;0.6" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="1000" cy="150" r="4" fill="#a78bfa" opacity="0.6" filter="url(#softGlow)">
+    <animate attributeName="r" values="4;20;4" dur="4s" begin="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0;0.6" dur="4s" begin="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Connection lines -->
+  <line x1="200" y1="150" x2="450" y2="130" stroke="#60a5fa" stroke-width="0.5" opacity="0.15"/>
+  <line x1="450" y1="130" x2="600" y2="150" stroke="#a78bfa" stroke-width="0.5" opacity="0.15"/>
+  <line x1="600" y1="150" x2="750" y2="130" stroke="#60a5fa" stroke-width="0.5" opacity="0.15"/>
+  <line x1="750" y1="130" x2="1000" y2="150" stroke="#a78bfa" stroke-width="0.5" opacity="0.15"/>
+
+  <!-- Small node dots -->
+  <circle cx="450" cy="130" r="2" fill="#60a5fa" opacity="0.4"/>
+  <circle cx="750" cy="130" r="2" fill="#a78bfa" opacity="0.4"/>
+
+  <!-- Main title -->
+  <text x="600" y="135" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="72" font-weight="800" fill="url(#textGrad)" filter="url(#glow)" letter-spacing="-2">
+    WolfeUp
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="175" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" fill="#94a3b8" letter-spacing="8" font-weight="300">
+    AUTONOMOUS AI INFRASTRUCTURE
+  </text>
+
+  <!-- Accent line -->
+  <rect x="350" y="195" width="500" height="1" fill="url(#lineGrad)" rx="0.5"/>
+
+  <!-- Stats row -->
+  <text x="310" y="230" text-anchor="middle" font-family="'SF Mono', 'Fira Code', monospace" font-size="13" fill="#60a5fa" font-weight="600">5 SERVERS</text>
+  <text x="470" y="230" text-anchor="middle" font-family="'SF Mono', 'Fira Code', monospace" font-size="13" fill="#a78bfa" font-weight="600">75+ GAMES</text>
+  <text x="600" y="230" text-anchor="middle" font-family="'SF Mono', 'Fira Code', monospace" font-size="13" fill="#60a5fa" font-weight="600">6 AI MODELS</text>
+  <text x="740" y="230" text-anchor="middle" font-family="'SF Mono', 'Fira Code', monospace" font-size="13" fill="#a78bfa" font-weight="600">15 MCP SERVERS</text>
+  <text x="895" y="230" text-anchor="middle" font-family="'SF Mono', 'Fira Code', monospace" font-size="13" fill="#60a5fa" font-weight="600">RTX 4090</text>
+
+  <!-- Divider dots -->
+  <circle cx="390" cy="226" r="1.5" fill="#334155"/>
+  <circle cx="530" cy="226" r="1.5" fill="#334155"/>
+  <circle cx="670" cy="226" r="1.5" fill="#334155"/>
+  <circle cx="820" cy="226" r="1.5" fill="#334155"/>
+
+  <!-- Bottom fade -->
+  <rect x="0" y="270" width="1200" height="30" fill="url(#bg)" opacity="0.8"/>
+</svg>
